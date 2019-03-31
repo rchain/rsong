@@ -1,0 +1,27 @@
+target/
+project/boot/
+.idea/
+.idea*
+*.log
+*.loaded
+*.pid
+##
+## emacs & ensime
+##
+project/.ensime
+**/**.tags
+**/**.bloop*/
+**/**.TAGS
+.ensime*/
+.ensime
+ensime_port
+.#*
+*.swp
+.history
+.cache
+native/
+##
+## direnv
+##
+.envrc
+

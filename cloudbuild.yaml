@@ -1,0 +1,16 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ["build", "-t", "gcr.io/www-rchain-coop-222319/github.com/rchain/www/rsong:v1.0-$SHORT_SHA", "rsong"]
+- name: 'gcr.io/cloud-builders/docker'
+  args: ["push", "gcr.io/www-rchain-coop-222319/github.com/rchain/www/rsong:v1.0-$SHORT_SHA"]
+- name: 'gcr.io/cloud-builders/kubectl'
+  args:
+  - "-n"
+  - "qa"
+  - "set"
+  - "image"
+  - "deployment.v1.apps/rsong"
+  - "rsong=gcr.io/www-rchain-coop-222319/github.com/rchain/www/rsong:v1.0-$SHORT_SHA"
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-east1'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=dev-rchain-coop'
