@@ -6,42 +6,62 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/rewrite-target: /
-    # certmanager.k8s.io/cluster-issuer: rsong-rchain-coop
-    # nginx.ingress.kubernetes.io/tls-acme: 'true'
-    # kubernetes.io/tls-acme: 'true'
-    # ingress.kubernetes.io/force-ssl-redirect: "true"
+    certmanager.k8s.io/cluster-issuer: rsong-rchain-coop
+    nginx.ingress.kubernetes.io/tls-acme: 'true'
+    kubernetes.io/tls-acme: 'true'
+    ingress.kubernetes.io/force-ssl-redirect: "true"
 
 spec:
   rules:
-  - host: dev-rchain.com
+  - host: test-rsong-proxy.rchain.coop
     http:
       paths:
         - backend:
-            serviceName: rsong-proxy
+            serviceName: proxy
             servicePort: 9000
-  - host: rsong-proxy.rchain.coop
+  - host: www.test-rsong-proxy.rchain.coop
     http:
       paths:
         - backend:
-            serviceName: rsong-proxy
+            serviceName: proxy
             servicePort: 9000
-  - host: www.rsong-proxy.rchain.coop
+  - host: test-rsong-acquisition.rchain.coop
     http:
       paths:
         - backend:
-            serviceName: rsong-proxy
+            serviceName: acq
             servicePort: 9000
-  - host: rsong-admin.rchain.coop
+  - host: www.test-rsong-acquisition.rchain.coop
     http:
       paths:
         - backend:
             serviceName: rsong-admin
             servicePort: 80
-  - host: www.rsong-admin.rchain.coop
+
+  - host: test-rcat-ui.rchain.coop
     http:
       paths:
         - backend:
-            serviceName: rsong-admin
+            serviceName: rcat-ui
+            servicePort: 80
+  - host: www.test-rcat-ui.rchain.coop
+    http:
+      paths:
+        - backend:
+            serviceName: rcat-ui
+            servicePort: 80
+
+  - host: test-rcat-api.rchain.coop
+    http:
+      paths:
+        - backend:
+            serviceName: rcat-api
+            servicePort: 80
+  - host: www.test-rcat-api.rchain.coop
+    http:
+      paths:
+        - backend:
+            serviceName: rcat-api
             servicePort: 80
 
   # tls:
