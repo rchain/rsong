@@ -22,13 +22,14 @@ object Bootstrap extends IOApp {
 object ServerStream {
   import coop.rchain.rsong.proxy.api.middleware.MiddleWear._
 
-  val proxy: RNodeProxy = RNodeProxy()
   val rnodeServer= Server(rnodeHost, rnodePort)
   val grpc = GRPC(rnodeServer)
+  val proxy: RNodeProxy = RNodeProxy(grpc)
   val redisServer: Server = Server(redisHost, redisPort)
-  val repo = Repo(grpc, proxy)
+
+  val repo = Repo(AssetRepo(proxy))
   val cachedSongRepo: AssetCache = AssetCache(redisServer, repo)
-  val cachedUserRepo: UserCache = UserCache(redisServer, UserRepo(grpc,proxy))
+  val cachedUserRepo: UserCache = UserCache(redisServer, UserRepo(proxy))
 
   def statusApi[F[_]: Effect] = new Status[F].routes
   def userApi[F[_]: Effect] = new UserApi[F](cachedUserRepo).routes

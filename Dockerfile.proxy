@@ -1,4 +1,4 @@
-FROM openjdk:11.0.1
+FROM openjdk:11.0.2
 
 ENV PORT 9000
 ENV APP_DIR /var/app
@@ -9,7 +9,7 @@ EXPOSE $PORT
 
 # Env variables
 ENV SCALA_VERSION 2.12.8
-ENV SBT_VERSION 1.2.7
+ENV SBT_VERSION 1.2.8
 
 # Install Scala
 ## Piping curl directly in tar
@@ -25,7 +25,11 @@ RUN  curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_
      apt-get update && \
      apt-get install sbt && \
      sbt sbtVersion && \
+     mkdir project && \
+     echo "scalaVersion := \"${SCALA_VERSION}\"" > build.sbt && \
+     echo "sbt.version=${SBT_VERSION}" > project/build.properties && \
+     echo "case object Temp" > Temp.scala && \
      sbt proxy/universal:stage 
-RUN ls -la $APP_DIR/proxy/target/universal/stage/bin && \
+RUN ls -la $APP_DIR/proxy/target/universal/stage/bin &&   \
     ls -la $APP_DIR/proxy/target/universal/stage/lib 
 CMD ["proxy/target/universal/stage/bin/proxy"]

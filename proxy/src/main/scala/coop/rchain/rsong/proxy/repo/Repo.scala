@@ -1,9 +1,8 @@
 package coop.rchain.rsong.proxy.repo
 
+import com.typesafe.scalalogging.Logger
 import coop.rchain.rsong.core.domain.Err
-import coop.rchain.rsong.core.repo.GRPC.GRPC
 import coop.rchain.rsong.core.repo.AssetRepo
-import coop.rchain.rsong.core.repo.RNodeProxy
 import coop.rchain.rsong.proxy.domain.Domain._
 import coop.rchain.rsong.core.utils.{Base16 => B16}
 
@@ -14,13 +13,15 @@ trait Repo {
 }
 
 object Repo {
-  def apply(grpc: GRPC, proxy: RNodeProxy): Repo = new Repo {
-    val assetRepo = AssetRepo(grpc, proxy)
+  def apply(assetRepo: AssetRepo): Repo = new Repo {
+    val log = Logger[Repo.type ]
     def queryAsset(nameIn: String): Either[Err, String] = {
       for {
-        n ← proxy.dataAtName(s""""$nameIn"""")(grpc)
+        n ← assetRepo.dataAtName(s""""$nameIn"""", Int.MaxValue) // get the Orig Contract
         q = SongQuery(nameIn, n)
+       _=log.info(s"SongQuery for asset=$nameIn = ${q.contract}")
         s ← assetRepo.getAsset(q)
+
       }yield (s)
     }
  }

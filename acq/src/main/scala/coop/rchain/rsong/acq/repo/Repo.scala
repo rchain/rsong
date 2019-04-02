@@ -2,8 +2,7 @@ package coop.rchain.rsong.acq.repo
 import com.typesafe.scalalogging.Logger
 import coop.rchain.rsong.acq.domain.Domain.RawAsset
 import coop.rchain.rsong.core.domain.{Err, RSongJsonAsset, Server}
-import coop.rchain.rsong.core.repo.GRPC.GRPC
-import coop.rchain.rsong.core.repo.{GRPC, RNodeProxy}
+import coop.rchain.rsong.core.repo.RNodeProxy
 import coop.rchain.rsong.core.utils.FileUtil
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -22,22 +21,22 @@ object Repo {
   }
 
 
-  def apply(grpc: GRPC, proxy: RNodeProxy): Repo = new Repo {
+  def apply(proxy: RNodeProxy): Repo = new Repo {
     def deployFile(path: String ): Either[Err, String] =
 
     for {
       c <- FileUtil.fileFromClasspath(path)
-      d <- proxy.deploy(c)(grpc)
+      d <- proxy.deploy(c)
     } yield d
 
-    def proposeBlock: Either[Err, String] = proxy.proposeBlock(grpc)
+    def proposeBlock: Either[Err, String] = proxy.proposeBlock
 
     import FileUtil._
     def deployAsset( asset: RawAsset ): Either[Err, String] =  {
     val asJsonAsset = RSongJsonAsset(id = asset.id,
       assetData = asHexConcatRsong(asset.uri).toOption.get,
       jsonData = asset.metadata.asJson.toString)
-    (asRholang _ andThen proxy.deploy _) (asJsonAsset)(grpc)
+    (asRholang _ andThen proxy.deploy _) (asJsonAsset)
   }
   }
 

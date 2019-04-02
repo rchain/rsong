@@ -14,9 +14,9 @@ object Bootstrap extends IOApp {
   lazy val log = Logger[Bootstrap.type]
   val rnode = Server(G.rnodeHost, G.rnodePort)
   val grpc = GRPC(rnode)
-  val nodeProxy = RNodeProxy()
+  val nodeProxy = RNodeProxy(grpc)
 
-  val repo = Repo(grpc, nodeProxy)
+  val repo = Repo(nodeProxy)
 
   def run(args: List[String]): IO[ExitCode] =
     args.headOption match {
@@ -57,7 +57,7 @@ object Bootstrap extends IOApp {
     for {
       _ ← repo.deployAsset(RawAsset(
                              "Broke.jpg",
-                             s"$path/Labels/Broke.jpg",
+                             s"$path/Labels/Broke2.jpg",
                              mocSongs("Broke")))
 /**
       _ ← repo.deployAsset(RawAsset(
