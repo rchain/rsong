@@ -9,10 +9,11 @@ object Domain {
   case class SongQuery(
     nameIn: String,
     songId: String ) extends Query {
-
-    def nameOut = s""""${nameIn}.out""""
-    def contract: String = s"""
-       @["Immersion", "retrieveSong"]!("$songId".hexToBytes(), $nameOut)"""
+     def nameOut = s"${nameIn}.out"
+     def contract: String =
+      s"""
+         |@["Immersion", "retrieveSong"]!("$songId".hexToBytes(), "$nameOut")
+         |""".stripMargin.trim
   }
 
   case class RSong(

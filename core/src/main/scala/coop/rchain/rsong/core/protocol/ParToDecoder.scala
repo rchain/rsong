@@ -20,7 +20,6 @@ object ParUtil {
           log.error(s"String2Par failed with Exception: ${e.getMessage}")
           Left(Err(OpCode.nameToPar, e.getMessage))
         case Right(r) =>
-          log.info(s"rTerm: ${rTerm} Par: ${r}")
           Right(r)
       }
     }

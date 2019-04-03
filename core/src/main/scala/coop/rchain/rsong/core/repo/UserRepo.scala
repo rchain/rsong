@@ -2,7 +2,6 @@ package coop.rchain.rsong.core.repo
 
 import com.typesafe.scalalogging.Logger
 import coop.rchain.rsong.core.domain._
-import coop.rchain.rsong.core.repo.GRPC.GRPC
 
 import scala.util._
 
@@ -35,31 +34,31 @@ object UserRepo {
     }
   }
 
-  def apply(grpc: GRPC, proxy: RNodeProxy) = new UserRepo {
+  def apply(proxy: RNodeProxy) = new UserRepo {
 
     def newUser(user: String): Either[Err, DeployAndProposeResponse] ={
       val term = newUserRhoTerm(user)
       for{
-      d <- proxy.deploy(term)(grpc)
-      p <- proxy.proposeBlock(grpc)
+      d <- proxy.deploy(term)
+      p <- proxy.proposeBlock
       }  yield DeployAndProposeResponse(d,p)
 }
     def putPlayCountAtName(
         userId: String,
         playCountOut: String): Either[Err, DeployAndProposeResponse] =
       for {
-        rhoName <- proxy.dataAtName(s"""" $userId"""")(grpc)
+        rhoName <- proxy.dataAtName(s"""" $userId"""")
         playCountArgs = s"""("$rhoName".hexToBytes(), "$playCountOut")"""
         term = s"""@["Immersion", "playCount"]!${playCountArgs}"""
-        d <- proxy.deploy(term)(grpc)
-        p <- proxy.deploy(term)(grpc)
+        d <- proxy.deploy(term)
+        p <- proxy.deploy(term)
       } yield DeployAndProposeResponse(d,p)
 
     def fetchPlayCount(userId: String): Either[Err, PlayCount] = {
       val playCountOut = s"$userId-${COUNT_OUT}-${System.currentTimeMillis()}"
       val pc = for {
         _ <- putPlayCountAtName(userId, playCountOut)
-        count <- proxy.dataAtName(s""""$playCountOut"""")(grpc)
+        count <- proxy.dataAtName(s""""$playCountOut"""")
         countAsInt <- asInt(count)
       } yield PlayCount(countAsInt)
       log.info(s"userid: $userId has ${pc}")
@@ -70,13 +69,13 @@ object UserRepo {
       val permittedOut =
         s"${userId}-${songId}-permittedToPlay-${System.currentTimeMillis()}"
       val pOut = for {
-        sid <- proxy.dataAtName(s""""${songId}_Stereo.izr""""")(grpc)
-        uid <- proxy.dataAtName(s""""$userId"""")(grpc)
+        sid <- proxy.dataAtName(s""""${songId}_Stereo.izr""""")
+        uid <- proxy.dataAtName(s""""$userId"""")
         parameters = s"""("$sid".hexToBytes(), "$uid".hexToBytes(), "$permittedOut")"""
         term = s"""@["Immersion", "play"]!${parameters}"""
-        _ <- proxy.deploy(term)(grpc)
-        _ <- proxy.proposeBlock(grpc)
-        p <- proxy.dataAtName(""""$permittedOut"""")(grpc)
+        _ <- proxy.deploy(term)
+        _ <- proxy.proposeBlock
+        p <- proxy.dataAtName(""""$permittedOut"""")
       } yield p
       log.info(s"user: $userId with song: $songId has permitedOut: $pOut")
       pOut
