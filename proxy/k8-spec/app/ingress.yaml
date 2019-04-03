@@ -5,11 +5,11 @@ metadata:
   name: rsong
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    certmanager.k8s.io/cluster-issuer: rsong-rchain-coop
-    nginx.ingress.kubernetes.io/tls-acme: 'true'
-    kubernetes.io/tls-acme: 'true'
-    ingress.kubernetes.io/force-ssl-redirect: "true"
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # certmanager.k8s.io/cluster-issuer: rsong-rchain-coop
+    # nginx.ingress.kubernetes.io/tls-acme: 'true'
+    # kubernetes.io/tls-acme: 'true'
+    # ingress.kubernetes.io/force-ssl-redirect: "true"
 
 spec:
   rules:
@@ -17,56 +17,17 @@ spec:
     http:
       paths:
         - backend:
-            serviceName: proxy
+            serviceName: rsong-proxy
             servicePort: 9000
-  - host: www.test-rsong-proxy.rchain.coop
+  - host: test-rsong-acq.rchain.coop
     http:
       paths:
         - backend:
-            serviceName: proxy
+            serviceName: rsong-proxy
             servicePort: 9000
-  - host: test-rsong-acquisition.rchain.coop
-    http:
-      paths:
-        - backend:
-            serviceName: acq
-            servicePort: 9000
-  - host: www.test-rsong-acquisition.rchain.coop
-    http:
-      paths:
-        - backend:
-            serviceName: rsong-admin
-            servicePort: 80
-
-  - host: test-rcat-ui.rchain.coop
-    http:
-      paths:
-        - backend:
-            serviceName: rcat-ui
-            servicePort: 80
-  - host: www.test-rcat-ui.rchain.coop
-    http:
-      paths:
-        - backend:
-            serviceName: rcat-ui
-            servicePort: 80
-
-  - host: test-rcat-api.rchain.coop
-    http:
-      paths:
-        - backend:
-            serviceName: rcat-api
-            servicePort: 80
-  - host: www.test-rcat-api.rchain.coop
-    http:
-      paths:
-        - backend:
-            serviceName: rcat-api
-            servicePort: 80
 
   # tls:
   # - hosts:
-  #     # - rsong-admin.rchain.coop 
-  #     - www.rsong-admin.rchain.coop 
-  #     - www.rsong-proxy.rchain.coop 
+  #     - test-rsong-proxy.rchain.coop 
+  #     - test-rsong-acq.rchain.coop 
   #   secretName: tls-letsencrypt-rsong
