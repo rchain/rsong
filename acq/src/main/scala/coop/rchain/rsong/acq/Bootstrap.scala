@@ -4,19 +4,20 @@ import cats.effect._
 import cats.syntax.all._
 import com.typesafe.scalalogging.Logger
 import coop.rchain.rsong.acq.domain.Domain.RawAsset
-import coop.rchain.rsong.acq.moc.MocSongMetadata._
+import coop.rchain.rsong.acq.moc.MocSongMetadata
 import coop.rchain.rsong.acq.repo.Repo
 import coop.rchain.rsong.acq.utils.{Globals => G}
-import coop.rchain.rsong.core.domain.Server
-import coop.rchain.rsong.core.repo.{GRPC, RNodeProxy}
+import coop.rchain.rsong.core.domain.{Err, Server, SongQuery}
+import coop.rchain.rsong.core.repo.{AssetRepo, GRPC, RNodeProxy}
 
 object Bootstrap extends IOApp {
   lazy val log = Logger[Bootstrap.type]
   val rnode = Server(G.rnodeHost, G.rnodePort)
   val grpc = GRPC(rnode)
-  val nodeProxy = RNodeProxy(grpc)
+  val proxy = RNodeProxy(grpc)
+  val assetRepo=AssetRepo(proxy)
 
-  val repo = Repo(nodeProxy)
+  val repo = Repo(assetRepo)
 
   def run(args: List[String]): IO[ExitCode] =
     args.headOption match {
@@ -36,9 +37,10 @@ object Bootstrap extends IOApp {
 
       case None =>
         val r = for {
-          _ <- installContract(G.contractPath)
-          a <- installAssets(G.rsongPath)
-        } yield (a)
+          _ ← installContract(G.contractPath)
+          a ← installAssets(G.rsongPath)
+        r <- retrievalName(a)
+        } yield (r)
         IO(r).as(ExitCode.Success)
           .handleError(e => {
           log.error(s"RsongAcquisition has failed with error: ${e.getMessage}")
@@ -48,59 +50,24 @@ object Bootstrap extends IOApp {
 
   def installContract(contractFile: String) = {
       for {
-        _ <- repo.deployFile(contractFile)
-        propose <- repo.proposeBlock
+        _ ← repo.deployFile(contractFile)
+        propose ← repo.proposeBlock
       } yield (propose)
   }
 
-  def installAssets(path: String) = {
+  def installAssets(path: String): Either[Err, Seq[RawAsset]] = {
+    val assets = MocSongMetadata.assets(path)
+    val installed = for {
+      _ ← repo.deployAsset(assets)
+      p ← repo.proposeBlock
+    } yield (p)
+   installed.map(_ ⇒ assets)
+  }
+  def retrievalName(assets: Seq[RawAsset]) =
     for {
-      _ ← repo.deployAsset(RawAsset(
-                             "Broke.jpg",
-                             s"$path/Labels/Broke2.jpg",
-                             mocSongs("Broke")))
-/**
-      _ ← repo.deployAsset(RawAsset(
-                                 "Broke_Immersive.izr",
-                                 s"$path/Songs/Broke_Immersive.izr",
-                                 mocSongs("Broke")))
+      r ← repo.retrievalName(assets)
+    _ ← repo.proposeBlock
+   } yield (r)
 
-      _ ← repo.deployAsset(RawAsset(
-                                  "Broke_Stereo.izr",
-                                  s"$path/Songs/Broke_Stereo.izr",
-                                  mocSongs("Broke")))
-
-        _ ← repo.deployAsset(RawAsset(
-                                "Euphoria_Immersive.izr",
-                                s"$path/Songs/Euphoria_Immersive.izr",
-                                mocSongs("Euphoria")))
-
-        _ ← repo.deployAsset(RawAsset(
-                               "Euphoria_Stereo.izr",
-                               s"$path/Songs/Euphoria_Stereo.izr",
-                               mocSongs("Euphoria")))
-
-        _ ← repo.deployAsset(RawAsset(
-                               "Euphoria.jpg",
-                               s"$path/Labels/Euphoria.jpg",
-                               mocSongs("Euphoria")))
-
-        _ ← repo.deployAsset(RawAsset(
-                                "Tiny_Human_Immersive.izr",
-                                s"$path/Songs/Tiny_Human_Immersive.izr",
-                                mocSongs("Tiny_Human")))
-        _ ← repo.deployAsset(RawAsset(
-                                "Tiny_Human_Stereo.izr",
-                                s"$path/Songs/Tiny_Human_Stereo.izr",
-                                mocSongs("Tiny_Human")))
-        _ ← repo.deployAsset(RawAsset(
-                                "Tiny Human.jpg",
-                                s"$path/Labels/Tiny Human.jpg",
-                                mocSongs("Tiny_Human")))
- * */
-        propose <-repo.proposeBlock
-
-      } yield (propose)
-  }
 
 }

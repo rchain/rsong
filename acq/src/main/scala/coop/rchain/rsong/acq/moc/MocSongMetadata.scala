@@ -1,6 +1,7 @@
 package coop.rchain.rsong.acq.moc
 
 import coop.rchain.rsong.core.domain._
+import coop.rchain.rsong.acq.domain.Domain.RawAsset
 
 object MocSongMetadata {
 
@@ -127,4 +128,20 @@ object MocSongMetadata {
                    album = Some(albums("Tiny_Human"))))
   )
 
+  def assets(path: String): Seq[RawAsset] = Seq(
+    RawAsset("Broke.jpg", s"$path/Labels/Broke.jpg", mocSongs("Broke")),
+    RawAsset("Euphoria.jpg", s"$path/Labels/Euphoria.jpg", mocSongs("Euphoria")),
+    RawAsset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human"))
+ /**    ,
+ //TODO uncomment me for full run
+    RawAsset("Broke_Immersive.izr", s"$path/Songs/Broke_Immersive.izr", mocSongs("Broke")),
+    RawAsset("Broke_Stereo.izr", s"$path/Songs/Broke_Stereo.izr", mocSongs("Broke")),
+    RawAsset("Euphoria_Immersive.izr", s"$path/Songs/Euphoria_Immersive.izr", mocSongs("Euphoria")),
+    RawAsset("Euphoria_Stereo.izr", s"$path/Songs/Euphoria_Stereo.izr", mocSongs("Euphoria")),
+    RawAsset("Euphoria.jpg", s"$path/Labels/Euphoria.jpg", mocSongs("Euphoria")),
+    RawAsset("Tiny_Human_Immersive.izr", s"$path/Songs/Tiny_Human_Immersive.izr", mocSongs("Tiny_Human")),
+   RawAsset("Tiny_Human_Stereo.izr", s"$path/Songs/Tiny_Human_Stereo.izr", mocSongs("Tiny_Human")),
+   RawAsset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human")),
+**/
+    )
 }

@@ -16,6 +16,16 @@ trait Query {
   def contract: String
 }
 
+case class SongQuery(
+  nameIn: String,
+  songId: String ) extends Query {
+  def nameOut = s"${nameIn}.out"
+  def contract: String =
+    s"""
+       |@["Immersion", "retrieveSong"]!("$songId".hexToBytes(), "$nameOut")
+       |""".stripMargin.trim
+}
+
 object OpCode extends Enumeration {
   type OpCode = Value
   val grpcEval, grpcDeploy, grpcPropose, grpcShow, rholang, nameToPar,

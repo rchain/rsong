@@ -70,7 +70,6 @@ object RNodeProxy {
                              _z.map( x ⇒ x.blockResults.flatMap(y ⇒ y.postBlockData))
           val es: Either[Seq[String], Seq[Expr]] = pars.map(p ⇒ p.flatMap(_p ⇒ _p.exprs))
           val _es = es.map( x ⇒ x map(PrettyPrinter().buildString ) )
-        log.info(s"Converting expr to string using PrettyPrinter().buildString = ${_es}")
           _es match {
             case Left(z) ⇒ 
               Left(Err(OpCode.listenAtName, z.toString))
