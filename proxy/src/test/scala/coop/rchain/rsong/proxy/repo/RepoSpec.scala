@@ -22,11 +22,11 @@ class RepoSpec extends  Specification  { def is = s2"""
       q = SongQuery(assetName, n)
       _=log.info(s"SongQuery = ${q}")
       _=log.info(s"SongQuery contract = ${q.contract}")
-     d ← assetRepo.getAsset(q)
-     // i ← assetRepo.findDataAtName(s""""${q.nameOut}"""")(20)
-    } yield (d)
+     //d ← assetRepo.getAsset(q)
+     i ← assetRepo.dataAtName(s""""${q.nameOut}"""", 20)
+    } yield (i)
 
-    log.info(s"computed --doataAtName({ccccc })-- = ${c}")
+    log.info(s"computed data-size= ${c.toOption.get.length}  data = ${c}")
     c must beRight
     }
   def e2 = 1 === 1

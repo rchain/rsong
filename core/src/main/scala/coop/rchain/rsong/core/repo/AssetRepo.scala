@@ -8,7 +8,7 @@ trait AssetRepo {
   def dataAtName(name: String, depth: Int) : Either[Err, String]
   def findDataAtName(name: String)(maxDepth: Int) : Either[Err, String] = {
     def helper(depth: Int) : Either[Err, String] = {
-      println(s"_______________ DEPTH = $depth.  name= $name ----------------")
+      println(s"___DEPTH = $depth.  name= $name ---")
       dataAtName(name, depth) match {
         case Left(Err(OpCode.nameNotFound, _)) if depth < maxDepth => helper(depth+1)
         case Right(r) => Right(r)
@@ -30,7 +30,9 @@ object AssetRepo {
       for {
         _ ← proxy.deploy(q.contract)
         _ ← proxy.proposeBlock
+        _=log.info(s"contract → ${q.contract} was deployed and proposed.")
         asStr ← findDataAtName(s""""${q.nameOut}"""")(20)
+        _=log.info(s"findDataAtName(${q.nameOut}) retrieved length: =${asStr.length}")
       } yield (asStr)
     }
 
