@@ -19,11 +19,11 @@ spec:
     spec:
       containers:
       - name: rsong-proxy
-        image: kayvank/rsong-proxy:1.0.9-SNAPSHOT-v5-berlin-demo
+        image: kayvank/rsong-proxy:v1.0-RC001
         resources:
           requests:
-            cpu: 300m
-            memory: 20000m
+            cpu: 100m
+            memory: 10000m
         env:
         - name: GET_HOSTS_FROM
           value: dns
@@ -37,13 +37,13 @@ spec:
         - containerPort: 9000
         livenessProbe:
           httpGet:
-            path: /
+            path: /status
             port: 9000
           initialDelaySeconds: 4
           timeoutSeconds: 3
         readinessProbe:
           httpGet:
-            path: /
+            path: /status
             port: 9000
           initialDelaySeconds: 4
           periodSeconds: 3

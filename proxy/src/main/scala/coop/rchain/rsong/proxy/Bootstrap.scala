@@ -33,8 +33,8 @@ object ServerStream {
 
   def statusApi[F[_]: Effect] = new Status[F].routes
   def userApi[F[_]: Effect] = new UserApi[F](cachedUserRepo).routes
-  def songApi[F[_]: Effect] =
-    new SongApi[F](cachedSongRepo, cachedUserRepo).routes
+  def songApi[F[_]: Effect] = new SongApi[F](cachedSongRepo, cachedUserRepo).routes
+  def ingestApi[F[_]: Effect] = new IngestApi[F](cachedSongRepo, cachedUserRepo).routes
 
   Kamon.addReporter(new PrometheusReporter())
 
@@ -46,5 +46,6 @@ object ServerStream {
       .mountService(corsHeader(statusApi), s"/")
       .mountService(corsHeader(userApi), s"/${apiVersion}/user")
       .mountService(corsHeader(songApi), s"/${apiVersion}")
+      .mountService(corsHeader(ingestApi), s"/${apiVersion}")
       .serve
 }
