@@ -71,6 +71,4 @@ object Bootstrap extends IOApp {
       r ← repo.retrieveToName(assets)
     _ ← repo.proposeBlock
    } yield (r)
-
-
 }
