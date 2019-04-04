@@ -53,6 +53,7 @@ object RNodeProxy {
             .withTimestamp(System.currentTimeMillis())
             .withPhloLimit(Long.MaxValue)
             .withPhloPrice(1L)
+            .withValidAfterBlockNumber(-1)
         )
         .asEither(OpCode.grpcDeploy)
     }

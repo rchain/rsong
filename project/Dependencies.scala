@@ -17,7 +17,7 @@ object Dependencies {
      
   object library {
     val magnolia =  "com.propensive" %% "magnolia" % "0.10.0"
-    val spec2 = "org.specs2" %% "specs2-core" % V.specs2 % "test"
+    val spec2 = "org.specs2" %% "specs2-core" % V.specs2 % "it,test"
     val catsEffect = "org.typelevel" %% "cats-effect" % V.catsEffect
     val monix = "io.monix" %% "monix" % V.monix 
     val circie_core = "io.circe" %% "circe-core" % V.circie

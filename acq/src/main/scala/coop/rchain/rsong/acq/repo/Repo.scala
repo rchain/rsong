@@ -13,8 +13,8 @@ trait Repo {
   def deployAsset(asset: RawAsset): Either[Err, String]
   def deployAsset(assets: Seq[RawAsset]): Either[Err, String]
   def proposeBlock: Either[Err, String]
-  def retrievalName(asset: RawAsset) : Either[Err, String]
-  def retrievalName(assets: Seq[RawAsset]) : Either[Err, String]
+  def retrieveToName(asset: RawAsset) : Either[Err, String]
+  def retrieveToName(assets: Seq[RawAsset]) : Either[Err, String]
 
 }
 object Repo {
@@ -61,12 +61,12 @@ object Repo {
   }
 
 
-    def retrievalName(assets: Seq[RawAsset]): Either[Err, String]= {
-      val res = assets map retrievalName
+    def retrieveToName(assets: Seq[RawAsset]): Either[Err, String]= {
+      val res = assets map retrieveToName
       res.foldLeft(eisMonoid.empty)(eisMonoid.combine(_, _))
     }
 
-    def retrievalName(asset: RawAsset) = {
+    def retrieveToName(asset: RawAsset) = {
       for {
         n ← assetRepo.dataAtName(s""""${asset.id}"""", Int.MaxValue) // get the Orig Contract
         q = SongQuery(asset.id, n)

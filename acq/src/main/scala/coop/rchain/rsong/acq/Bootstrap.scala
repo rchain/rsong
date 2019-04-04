@@ -39,8 +39,8 @@ object Bootstrap extends IOApp {
         val r = for {
           _ ← installContract(G.contractPath)
           a ← installAssets(G.rsongPath)
-        r <- retrievalName(a)
-        } yield (r)
+        r <- prefetch(a)
+        } yield (a)
         IO(r).as(ExitCode.Success)
           .handleError(e => {
           log.error(s"RsongAcquisition has failed with error: ${e.getMessage}")
@@ -55,17 +55,20 @@ object Bootstrap extends IOApp {
       } yield (propose)
   }
 
-  def installAssets(path: String): Either[Err, Seq[RawAsset]] = {
-    val assets = MocSongMetadata.assets(path)
+  def installAssets(path: String): Either[Err, Seq[RawAsset]] =
+    (MocSongMetadata.assets _ andThen installAssets _) (path)
+
+  def installAssets(assets: Seq[RawAsset]): Either[Err, Seq[RawAsset]] = {
     val installed = for {
       _ ← repo.deployAsset(assets)
       p ← repo.proposeBlock
     } yield (p)
    installed.map(_ ⇒ assets)
   }
-  def retrievalName(assets: Seq[RawAsset]) =
+
+  def prefetch(assets: Seq[RawAsset]) =
     for {
-      r ← repo.retrievalName(assets)
+      r ← repo.retrieveToName(assets)
     _ ← repo.proposeBlock
    } yield (r)
 

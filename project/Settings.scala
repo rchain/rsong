@@ -41,16 +41,16 @@ object Settings {
 
   lazy val itSettings = Defaults.itSettings ++ Seq(
     logBuffered in IntegrationTest := false,
-    fork in IntegrationTest := true
-  )
+    fork in IntegrationTest := true,
+    scalaSource in IntegrationTest := baseDirectory.value / "src/it/scala")
 
   lazy val compilerSettings = CompilerSettings.options ++ Seq(
     crossScalaVersions := Seq("2.11.12", scalaVersion.value)
 )
-  lazy val acq = Seq() ++ global ++  testSettings ++  compilerSettings
+  lazy val acq = Seq() ++ global ++ compilerSettings ++ testSettings 
 
-  lazy val proxy = Seq() ++ global ++  testSettings ++  compilerSettings
+  lazy val proxy = Seq() ++ global ++ compilerSettings ++ testSettings
 
-  lazy val core = Seq() ++ global ++  testSettings ++  compilerSettings
+  lazy val core = Seq() ++ global ++ compilerSettings ++ testSettings 
 
 }
