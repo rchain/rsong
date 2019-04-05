@@ -16,7 +16,6 @@ object Bootstrap extends IOApp {
   val grpc = GRPC(rnode)
   val proxy = RNodeProxy(grpc)
   val assetRepo=AssetRepo(proxy)
-
   val repo = Repo(assetRepo)
 
   def run(args: List[String]): IO[ExitCode] =

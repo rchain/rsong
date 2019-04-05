@@ -35,8 +35,8 @@ object AssetRepo {
     def dataAtName(name: String, depth: Int): Either[Err, String] =
       proxy.dataAtName(name, depth)
 
-    def setDataAtName(q: Query): Either[Err, Unit] =  
-      for { 
+    def setDataAtName(q: Query): Either[Err, Unit] =
+      for {
       _ ← proxy.deploy(q.contract)
       _ ← proxy.proposeBlock
       _ = log.info(s"contract → ${q.contract} was deployed and proposed.")

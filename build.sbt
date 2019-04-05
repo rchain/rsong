@@ -1,24 +1,20 @@
 import Dependencies._
-import Settings._
 import TodoListPlugin._
-import NativePackagerHelper._
-import com.typesafe.sbt.packager.docker._
 
 lazy val compilerSettings = CompilerSettings.options ++ Seq(
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value)
-)
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value) )
 
 lazy val acq = (project in file("acq")).
+  configs(IntegrationTest extend Test).
   settings(Settings.proxy: _*).
-  configs(IntegrationTest).
   settings(Settings.acq: _*).
   dependsOn(core).
-  settings(libraryDependencies ++= Dep.acq)
+  settings(libraryDependencies ++= Dep.acq).
+  settings(scalaSource in IntegrationTest := baseDirectory.value / "src/it/scala")
 
 lazy val proxy = (project in file("proxy")).
+  configs(IntegrationTest extend Test).
   settings(Settings.proxy: _*).
-  configs(IntegrationTest).
-  settings(Defaults.itSettings: _*).
   dependsOn(core).
   enablePlugins(JavaAppPackaging, BuildInfoPlugin).
   settings(libraryDependencies ++= Dep.proxy)
