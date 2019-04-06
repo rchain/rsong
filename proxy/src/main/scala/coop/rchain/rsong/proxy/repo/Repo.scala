@@ -1,8 +1,7 @@
 package coop.rchain.rsong.proxy.repo
 
-import com.typesafe.scalalogging.Logger
-import coop.rchain.rsong.core.domain.{Err, SongQuery}
-import coop.rchain.rsong.core.repo.AssetRepo
+import coop.rchain.rsong.core.domain.{Err}
+import coop.rchain.rsong.core.repo.{RNodeProxy}
 import coop.rchain.rsong.core.utils.{Base16 => B16}
 
 trait Repo {
@@ -12,9 +11,8 @@ trait Repo {
 }
 
 object Repo {
-  def apply(assetRepo: AssetRepo): Repo = new Repo {
-    val log = Logger[Repo.type ]
+  def apply(proxy: RNodeProxy): Repo = new Repo {
     def queryAsset(nameIn: String): Either[Err, String] =
-        assetRepo.dataAtName (s""""${nameIn}.out"""", Int.MaxValue)
+        proxy.dataAtName (s""""${nameIn}.out"""", Int.MaxValue)
  }
 }

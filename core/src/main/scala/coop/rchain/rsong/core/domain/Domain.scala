@@ -106,4 +106,3 @@ case class DeParConverter(asInt: List[Int] = List(),
   asString: List[String] = List(),
   asUri: List[String] = List(),
   asByteArray: List[ByteString] = List())
-

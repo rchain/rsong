@@ -1,7 +1,7 @@
 package coop.rchain.rsong.acq.moc
 
-import coop.rchain.rsong.core.domain._
 import coop.rchain.rsong.acq.domain.Domain.RawAsset
+import coop.rchain.rsong.core.domain._
 
 object MocSongMetadata {
 
@@ -141,3 +141,4 @@ object MocSongMetadata {
    RawAsset("Tiny_Human_Stereo.izr", s"$path/Songs/Tiny_Human_Stereo.izr", mocSongs("Tiny_Human")),
    RawAsset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human")) )
 }
+

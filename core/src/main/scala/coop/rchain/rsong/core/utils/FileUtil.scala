@@ -2,9 +2,7 @@ package coop.rchain.rsong.core.utils
 
 import java.io.{BufferedInputStream, FileInputStream, InputStream}
 import coop.rchain.rsong.core.utils.{Base16 ⇒ B16 }
-
 import coop.rchain.rsong.core.domain.{Err, OpCode}
-
 import scala.util._
 
 object FileUtil {
@@ -22,6 +20,7 @@ object FileUtil {
         Left(Err(OpCode.contractFile, e.getMessage))
     }
   }
+
   def readStreamAsByteArray(stream: InputStream): Array[Byte] = {
     val bis = new BufferedInputStream(stream)
     Stream.continually(bis.read).takeWhile(-1 !=).map(_.toByte).toArray

@@ -1,7 +1,7 @@
 package coop.rchain.rsong.core.repo
 
 import coop.rchain.casper.protocol._
-import coop.rchain.models.{Par, Expr}
+import coop.rchain.models.{Expr, Par}
 import com.google.protobuf.empty._
 import coop.rchain.rsong.core.domain._
 import com.typesafe.scalalogging.Logger

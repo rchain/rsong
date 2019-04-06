@@ -27,7 +27,7 @@ object ServerStream {
   val proxy: RNodeProxy = RNodeProxy(grpc)
   val redisServer: Server = Server(redisHost, redisPort)
 
-  val repo = Repo(AssetRepo(proxy))
+  val repo = Repo(proxy)
   val cachedSongRepo: AssetCache = AssetCache(redisServer, repo)
   val cachedUserRepo: UserCache = UserCache(redisServer, UserRepo(proxy))
 

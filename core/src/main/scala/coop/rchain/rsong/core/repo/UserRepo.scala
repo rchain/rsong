@@ -75,7 +75,7 @@ object UserRepo {
         term = s"""@["Immersion", "play"]!${parameters}"""
         _ <- proxy.deploy(term)
         _ <- proxy.proposeBlock
-        p <- proxy.dataAtName(""""$permittedOut"""")
+        p <- proxy.dataAtName(s""""$permittedOut"""")
       } yield p
       log.info(s"user: $userId with song: $songId has permitedOut: $pOut")
       pOut
