@@ -47,8 +47,8 @@ object Settings {
 )
   lazy val acq = Seq() ++ global ++ compilerSettings ++ testSettings  
 
-  lazy val proxy = Seq() ++ global ++ compilerSettings ++ testSettings
+  lazy val proxy = Seq() ++ global ++ compilerSettings ++ testSettings ++ itSettings
 
-  lazy val core = Seq() ++ global ++ compilerSettings ++ testSettings 
+  lazy val core = Seq() ++ global ++ compilerSettings ++ testSettings  ++ itSettings
 
 }
