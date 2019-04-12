@@ -13,11 +13,13 @@ import coop.rchain.rsong.core.repo.GRPC.GRPC
 import coop.rchain.casper.protocol._
 import coop.rchain.casper.SignDeployment
 import coop.rchain.crypto.signatures.Ed25519
-import coop.rchain.crypto.PrivateKey
+import coop.rchain.crypto.{ PrivateKey, PublicKey }
 import RNodeProxyTypeAlias._
-import scala.util._
 import cats.data._
 import cats.implicits._
+import coop.rchain.crypto.codec.Base16
+import coop.rchain.rsong.core.utils.Globals
+import coop.rchain.rsong.core.utils.FileUtil
 
 object RNodeProxyTypeAlias {
   type EE              = Either[Err, String]
@@ -26,6 +28,15 @@ object RNodeProxyTypeAlias {
 
 trait RNodeProxy {
   def deploy(contract: RholangContract): GRPC ⇒ Either[Err, String]
+  def deployFile(filePath: String): GRPC ⇒ Either[Err, String] = grpc => {
+    val publicKey  = PublicKey(Base16.unsafeDecode(Globals.appCfg.getString("bond.key.public")))
+    val privateKey = PrivateKey(Base16.unsafeDecode(Globals.appCfg.getString("bond.key.private")))
+    for {
+      c ← FileUtil.fileFromClasspath(filePath)
+      d ← deploy(RholangContract(code = c, publicKey = publicKey, privateKey = privateKey))(grpc)
+
+    } yield (d)
+  }
   def proposeBlock: GRPC ⇒ Either[Err, String]
   def dataAtName(name: String): GRPC ⇒ Either[Err, String] = grpc ⇒ dataAtName(name, Int.MaxValue)(grpc)
   def dataAtName(name: String, depth: Int): GRPC ⇒ Either[Err, String]
@@ -33,6 +44,8 @@ trait RNodeProxy {
     Reader(cfg ⇒ deploy(contract)(cfg))
   def doDeploys(contracts: List[RholangContract]): ConfigReader[List[EE]] =
     contracts.traverse(doDeploy)
+  def doDeployFile(filePath: String): ConfigReader[EE] =
+    Reader(cfg ⇒ deployFile(filePath)(cfg))
 
   def doProposeBlock: ConfigReader[EE] = Reader(cfg ⇒ proposeBlock(cfg))
 }

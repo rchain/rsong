@@ -16,6 +16,7 @@ lazy val proxy = (project in file("proxy"))
   .settings(Settings.proxy: _*)
   .settings(Defaults.itSettings)
   .dependsOn(core % "compile -> compile;test->test")
+  .dependsOn(acq % "compile -> compile;test->test")
   .enablePlugins(JavaAppPackaging, BuildInfoPlugin)
   .settings(libraryDependencies ++= Dep.proxy)
 
