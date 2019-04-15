@@ -1,6 +1,6 @@
 package coop.rchain.rsong.acq.moc
 
-import coop.rchain.rsong.acq.domain.Domain.{ RsongAsset, TypeOfAsset }
+import coop.rchain.rsong.acq.domain.Domain.{ Asset, TypeOfAsset }
 import coop.rchain.rsong.core.domain._
 
 object MocSongMetadata {
@@ -119,18 +119,18 @@ object MocSongMetadata {
                    album = Some(albums("Tiny_Human"))))
   )
 
-  def assets(path: String): Seq[RsongAsset] =
+  def assets(path: String): Seq[Asset] =
     Seq(
-      RsongAsset("Broke.jpg", s"$path/Labels/Broke.jpg", mocSongs("Broke")),
-      RsongAsset("Euphoria.jpg", s"$path/Labels/Euphoria.jpg", mocSongs("Euphoria")),
-      RsongAsset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human")),
-      RsongAsset("Broke_Immersive.izr", s"$path/Songs/Broke_Immersive.izr", mocSongs("Broke")),
-      RsongAsset("Broke_Stereo.izr", s"$path/Songs/Broke_Stereo.izr", mocSongs("Broke")),
-      RsongAsset("Euphoria_Immersive.izr", s"$path/Songs/Euphoria_Immersive.izr", mocSongs("Euphoria")),
-      RsongAsset("Euphoria_Stereo.izr", s"$path/Songs/Euphoria_Stereo.izr", mocSongs("Euphoria")),
-      RsongAsset("Euphoria.jpg", s"$path/Labels/Euphoria.jpg", mocSongs("Euphoria")),
-      RsongAsset("Tiny_Human_Immersive.izr", s"$path/Songs/Tiny_Human_Immersive.izr", mocSongs("Tiny_Human")),
-      RsongAsset("Tiny_Human_Stereo.izr", s"$path/Songs/Tiny_Human_Stereo.izr", mocSongs("Tiny_Human")),
-      RsongAsset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human"))
+      Asset("Broke.jpg", s"$path/Labels/Broke.jpg", mocSongs("Broke")),
+      Asset("Euphoria.jpg", s"$path/Labels/Euphoria.jpg", mocSongs("Euphoria")),
+      Asset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human")),
+      Asset("Broke_Immersive.izr", s"$path/Songs/Broke_Immersive.izr", mocSongs("Broke")),
+      Asset("Broke_Stereo.izr", s"$path/Songs/Broke_Stereo.izr", mocSongs("Broke")),
+      Asset("Euphoria_Immersive.izr", s"$path/Songs/Euphoria_Immersive.izr", mocSongs("Euphoria")),
+      Asset("Euphoria_Stereo.izr", s"$path/Songs/Euphoria_Stereo.izr", mocSongs("Euphoria")),
+      Asset("Euphoria.jpg", s"$path/Labels/Euphoria.jpg", mocSongs("Euphoria")),
+      Asset("Tiny_Human_Immersive.izr", s"$path/Songs/Tiny_Human_Immersive.izr", mocSongs("Tiny_Human")),
+      Asset("Tiny_Human_Stereo.izr", s"$path/Songs/Tiny_Human_Stereo.izr", mocSongs("Tiny_Human")),
+      Asset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human"))
     )
 }

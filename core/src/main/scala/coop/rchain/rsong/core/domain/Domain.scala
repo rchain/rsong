@@ -1,14 +1,18 @@
 package coop.rchain.rsong.core.domain
 
-import com.google.protobuf.ByteString
 import coop.rchain.crypto.{ PrivateKey, PublicKey }
 
 sealed trait Domain
 
-case class RSongJsonAsset(
+case class RsongIngestedAsset(
   id: String,
-  assetData: String,
-  jsonData: String
+  data: String,
+  metadata: String
+) extends Domain
+case class RsongContent(
+  id: String,
+  assets: List[RsongIngestedAsset],
+  metaData: String
 ) extends Domain
 
 case class Server(

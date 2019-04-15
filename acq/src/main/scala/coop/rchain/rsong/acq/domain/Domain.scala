@@ -3,7 +3,7 @@ package coop.rchain.rsong.acq.domain
 import coop.rchain.rsong.core.domain.SongMetadata
 
 object Domain {
-  case class RsongAsset(
+  case class Asset(
     id: String,
     uri: String,
     metadata: SongMetadata

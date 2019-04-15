@@ -1,5 +1,1 @@
-new testLog(`rho:io:stderr`) in {
-  for (@songIdOut <- @"Broke.jpg" ) {
-    testLog ! (["fetch song --> ", songIdOut])
-  }
-}
+@["Immersion", "retrieveSong"]!("3a220a2077d64419e8cd548802d96bd617d73785e15812d4b883400e947c0b8403d5d760".hexToBytes(), "test-asset-1.out")
