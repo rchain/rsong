@@ -1,0 +1,11 @@
+new sOut, testLog(`rho:io:stderr`) in {
+  for (@myJamId <- @"Broke.jpg") {
+    testLog ! ("calling the contract") | 
+    @["Immersion", "retrieveSong"] ! (myJamId, "1234") |
+      for ( @pic <- @"1234") {
+        testLog ! ("pic has the process now") |
+        testLog ! (["ListAtName=sout", "1234"]) |
+        testLog ! (["ListAtName=Broke.jpg-out", pic])
+  }
+  }
+}

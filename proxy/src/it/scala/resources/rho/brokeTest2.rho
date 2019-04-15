@@ -1,0 +1,5 @@
+new testLog(`rho:io:stderr`) in {
+  for (@songIdOut <- @"Broke.jpg" ) {
+    testLog ! (["fetch song --> ", songIdOut])
+  }
+}

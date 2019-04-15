@@ -1,0 +1,10 @@
+new stdout(`rho:io:stdout`) in {
+@["Immersion", "retrieveSong"]!("3a220a20d6d7d31a71b7b3cfd85cd324ee7e103318724e07d3e54c02894f7ed0ca9c5223".hexToBytes(), "Euphoria.jpg-OUT")
+
+    | stdout !("contract euphoria deployed")
+    |
+  for(@pic <- @"Euphoria-jpg-OUT") {
+    stdout !("in the loop +++ Euphoria-jpg-OUT +++++++++")
+    | stdout !(pic)
+    }
+}

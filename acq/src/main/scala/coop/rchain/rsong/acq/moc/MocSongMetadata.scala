@@ -1,35 +1,26 @@
 package coop.rchain.rsong.acq.moc
 
+import coop.rchain.rsong.acq.domain.Domain.{ Asset, TypeOfAsset }
 import coop.rchain.rsong.core.domain._
-import coop.rchain.rsong.acq.domain.Domain.RawAsset
 
 object MocSongMetadata {
 
-
-  val artpath = "v1/art"
+  val artpath  = "v1/art"
   val songpath = "v1/song/music"
   //  val rsongHostUrl: String = "http://dev-rchain.com"
   val rsongHostUrl: String = java.net.InetAddress.getLocalHost.getHostName
 
-
   val artworks = Map(
-    "Broke" -> Artwork(id = "Broke",
-                       uri = s"${rsongHostUrl}/${artpath}/Broke.jpg"),
-    "Euphoria" -> Artwork(id = "Euphoria",
-                          uri = s"${rsongHostUrl}/${artpath}/Euphoria.jpg"),
-    "Tiny_Human" -> Artwork(id = "Tiny_Human",
-                            uri = s"${rsongHostUrl}/${artpath}/Tiny Human.jpg")
+    "Broke"      -> Artwork(id = "Broke", uri = s"${rsongHostUrl}/${artpath}/Broke.jpg"),
+    "Euphoria"   -> Artwork(id = "Euphoria", uri = s"${rsongHostUrl}/${artpath}/Euphoria.jpg"),
+    "Tiny_Human" -> Artwork(id = "Tiny_Human", uri = s"${rsongHostUrl}/${artpath}/Tiny Human.jpg")
   )
   val artists = Map(
-    "Broke" -> Artist(id = "Mycle-Wastman",
-                      name = "Mycle Wastman",
-                      title = "Mycle Wastman"),
+    "Broke" -> Artist(id = "Mycle-Wastman", name = "Mycle Wastman", title = "Mycle Wastman"),
     "Euphoria" -> Artist(id = "California-Guitar-Trio",
                          name = "California Guitar Trio",
                          title = "California Guitar Trio"),
-    "Tiny_Human" -> Artist(id = "Imogen-Heap",
-                           name = "Imogen Heap",
-                           title = "Imogen Heap")
+    "Tiny_Human" -> Artist(id = "Imogen-Heap", name = "Imogen Heap", title = "Imogen Heap")
   )
 
   val albums = Map(
@@ -128,16 +119,18 @@ object MocSongMetadata {
                    album = Some(albums("Tiny_Human"))))
   )
 
-  def assets(path: String): Seq[RawAsset] = Seq(
-    RawAsset("Broke.jpg", s"$path/Labels/Broke.jpg", mocSongs("Broke")),
-    RawAsset("Euphoria.jpg", s"$path/Labels/Euphoria.jpg", mocSongs("Euphoria")),
-    RawAsset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human")),
-    RawAsset("Broke_Immersive.izr", s"$path/Songs/Broke_Immersive.izr", mocSongs("Broke")),
-    RawAsset("Broke_Stereo.izr", s"$path/Songs/Broke_Stereo.izr", mocSongs("Broke")),
-    RawAsset("Euphoria_Immersive.izr", s"$path/Songs/Euphoria_Immersive.izr", mocSongs("Euphoria")),
-    RawAsset("Euphoria_Stereo.izr", s"$path/Songs/Euphoria_Stereo.izr", mocSongs("Euphoria")),
-    RawAsset("Euphoria.jpg", s"$path/Labels/Euphoria.jpg", mocSongs("Euphoria")),
-    RawAsset("Tiny_Human_Immersive.izr", s"$path/Songs/Tiny_Human_Immersive.izr", mocSongs("Tiny_Human")),
-   RawAsset("Tiny_Human_Stereo.izr", s"$path/Songs/Tiny_Human_Stereo.izr", mocSongs("Tiny_Human")),
-   RawAsset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human")) )
+  def assets(path: String): Seq[Asset] =
+    Seq(
+      Asset("Broke.jpg", s"$path/Labels/Broke.jpg", mocSongs("Broke")),
+      Asset("Euphoria.jpg", s"$path/Labels/Euphoria.jpg", mocSongs("Euphoria")),
+      Asset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human")),
+      Asset("Broke_Immersive.izr", s"$path/Songs/Broke_Immersive.izr", mocSongs("Broke")),
+      Asset("Broke_Stereo.izr", s"$path/Songs/Broke_Stereo.izr", mocSongs("Broke")),
+      Asset("Euphoria_Immersive.izr", s"$path/Songs/Euphoria_Immersive.izr", mocSongs("Euphoria")),
+      Asset("Euphoria_Stereo.izr", s"$path/Songs/Euphoria_Stereo.izr", mocSongs("Euphoria")),
+      Asset("Euphoria.jpg", s"$path/Labels/Euphoria.jpg", mocSongs("Euphoria")),
+      Asset("Tiny_Human_Immersive.izr", s"$path/Songs/Tiny_Human_Immersive.izr", mocSongs("Tiny_Human")),
+      Asset("Tiny_Human_Stereo.izr", s"$path/Songs/Tiny_Human_Stereo.izr", mocSongs("Tiny_Human")),
+      Asset("Tiny Human.jpg", s"$path/Labels/Tiny Human.jpg", mocSongs("Tiny_Human"))
+    )
 }
