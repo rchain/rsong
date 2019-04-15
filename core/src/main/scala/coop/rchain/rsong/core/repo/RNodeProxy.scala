@@ -101,7 +101,7 @@ object RNodeProxy {
     def proposeBlock: GRPC ⇒ Either[Err, String] = grpc ⇒ grpc.createBlock(Empty()).asEither(OpCode.grpcDeploy)
 
     def dataAtName(name: String, depth: Int): GRPC ⇒ Either[Err, String] = grpc ⇒ {
-      val par             = name.asPar
+      val par = name.asPar
       val dataAtNameQuery = DataAtNameQuery(depth, Some(par))
       log.info(s"name =$name   par=${par}  dataAtNameQuery = ${dataAtNameQuery}")
       val g = grpc.listenForDataAtName(dataAtNameQuery)
