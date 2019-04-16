@@ -30,18 +30,24 @@ object RChainToRsongHelper {
       }
   }
 
-  implicit class ListeningNameDataResponseOps(response: Either[Seq[String], ListeningNameDataResponse]) {
+  implicit class ListeningNameDataResponseOps(
+    response: Either[Seq[String], ListeningNameDataResponse]) {
     def asEitherString =
       response match {
-        case Left(strs) => Left(Err(OpCode.listenAtName, strs.toString))
-        case Right(ListeningNameDataResponse(_, length)) if length < 1 =>
-          Left(Err(OpCode.listenAtName, "dataAtName returned payload has length 0"))
-        case Right(ListeningNameDataResponse(blockResults, _)) if blockResults.isEmpty =>
+        case Left(strs) ⇒
+          Left(Err(OpCode.listenAtName, strs.toString))
+        case Right(ListeningNameDataResponse(_, length))
+            if length < 1 ⇒
+          Left(Err(OpCode.listenAtName,
+                   "dataAtName returned payload has length 0"))
+        case Right(ListeningNameDataResponse(blockResults, _))
+            if blockResults.isEmpty ⇒
           Left(Err(OpCode.listenAtName, "dataAtName returned payload is empty"))
-        case Right(ListeningNameDataResponse(blockResults, _)) =>
+        case Right(ListeningNameDataResponse(blockResults, _)) ⇒
           blockResults.flatMap(x => x.postBlockData.par).headOption match {
-            case None    => Left(Err(OpCode.listenAtName, "dataAtName returned payload is empty"))
-            case Some(r) => Right(PrettyPrinter().buildString(r))
+            case None ⇒ Left(Err(OpCode.listenAtName,
+                                 "dataAtName returned payload is empty"))
+            case Some(r) ⇒ Right(PrettyPrinter().buildString(r))
           }
       }
   }
@@ -50,4 +56,5 @@ object RChainToRsongHelper {
     def asPar: Par =
       Par().copy(exprs = Seq(Expr(GString(rTerm))))
   }
+   
 }

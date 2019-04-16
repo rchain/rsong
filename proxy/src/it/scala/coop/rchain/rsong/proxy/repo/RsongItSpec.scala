@@ -2,13 +2,13 @@ package coop.rchain.rsong.proxy.repo
 
 import coop.rchain.crypto.{ PrivateKey, PublicKey }
 import coop.rchain.crypto.codec.Base16
+import coop.rchain.crypto.signatures.Ed25519
 import coop.rchain.rsong.acq.moc.MocSongMetadata
 import coop.rchain.rsong.acq.service.AcqService
 import coop.rchain.rsong.core.domain._
 import coop.rchain.rsong.core.repo._
 import coop.rchain.rsong.core.utils.{ FileUtil, Globals }
 import coop.rchain.rsong.acq.service.AcqService._
-
 import org.specs2._
 import org.specs2.scalacheck.Parameters
 
@@ -26,8 +26,9 @@ class RsongItSpec extends Specification {
 "3a220a209ad777c23f1f88e6794710bfd790789ed3fed0c8e34108b2fb2a43b722ec4dfb".hexToBytes(),
 "Broke.jpg.out") """
 
-  val publicKey  = PublicKey(Base16.unsafeDecode(Globals.appCfg.getString("bond.key.public")))
-  val privateKey = PrivateKey(Base16.unsafeDecode(Globals.appCfg.getString("bond.key.private")))
+//  val publicKey  = PublicKey(Base16.unsafeDecode(Globals.appCfg.getString("bond.key.public")))
+//  val privateKey = PrivateKey(Base16.unsafeDecode(Globals.appCfg.getString("bond.key.private")))
+  val (prK, puK) = Ed25519.newKeyPair
 
   val server = Server(hostName = "localhost", port = 40401)
 
@@ -44,7 +45,7 @@ class RsongItSpec extends Specification {
   def e1 = {
     val contracts: List[RholangContract] =
       (1 to 20)
-        .map(i => (RholangContract(code = rholangcode(i), privateKey = privateKey, publicKey = publicKey)))
+        .map(i => (RholangContract(code = rholangcode(i), privateKey = prK, publicKey = puK)))
         .toList
 
     val computed = for {
@@ -63,9 +64,9 @@ class RsongItSpec extends Specification {
     val work = for {
       // _ ← installContract(contractPath)
       // _ ← acq.store(ingestedContent)
-     _ ← acq.retrieveToName(ingestedContent.id)
-     _ ← acq.proposeBlock
-     n ← acq.getDataAtName(s"${ingestedContent.id}.out")
+      _ ← acq.prefetch(ingestedContent.id)
+      _ ← acq.proposeBlock
+      n ← acq.getDataAtName(s"${ingestedContent.id}.out")
     } yield n
 
     val computed = work.run(grpc)
