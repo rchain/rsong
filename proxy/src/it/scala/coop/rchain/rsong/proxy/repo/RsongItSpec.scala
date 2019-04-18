@@ -1,17 +1,18 @@
 package coop.rchain.rsong.proxy.repo
 
-import coop.rchain.crypto.{ PrivateKey, PublicKey }
+import coop.rchain.crypto.{PrivateKey, PublicKey}
 import coop.rchain.crypto.codec.Base16
 import coop.rchain.crypto.signatures.Ed25519
 import coop.rchain.rsong.acq.moc.MocSongMetadata
 import coop.rchain.rsong.acq.service.AcqService
 import coop.rchain.rsong.core.domain._
 import coop.rchain.rsong.core.repo._
-import coop.rchain.rsong.core.utils.{ FileUtil, Globals }
+import coop.rchain.rsong.core.utils.{FileUtil, Globals}
 import coop.rchain.rsong.acq.service.AcqService._
 import org.specs2._
 import org.specs2.scalacheck.Parameters
 
+}
 //deploy contract $e1
 class RsongItSpec extends Specification {
   def is = s2"""
@@ -32,9 +33,9 @@ class RsongItSpec extends Specification {
 
   val server = Server(hostName = "localhost", port = 40401)
 
-  val grpc  = GRPC(server)
+  val grpc = GRPC(server)
   val proxy = RNodeProxy()
-  val acq   = AcqService(proxy)
+  val acq = AcqService(proxy)
 
   def installContract(contractFile: String) =
     for {
@@ -45,25 +46,37 @@ class RsongItSpec extends Specification {
   def e1 = {
     val contracts: List[RholangContract] =
       (1 to 20)
-        .map(i => (RholangContract(code = rholangcode(i), privateKey = prK, publicKey = puK)))
+        .map(
+          i =>
+            (RholangContract(
+              code = rholangcode(i),
+              privateKey = prK,
+              publicKey = puK
+            ))
+        )
         .toList
 
     val computed = for {
       ds ← proxy.doDeploys(contracts)
-      p  ← proxy.doProposeBlock
+      p ← proxy.doProposeBlock
     } yield p
     val res = computed.run(grpc)
     res must beRight
   }
   def e2 = {
-    val acq             = AcqService(proxy)
-    val contractPath    = Globals.appCfg.getString("contract.file.name")
-    val bytes           = "011001100110111101101111"
-    val ingestedContent = RsongIngestedAsset("Broke.jpg", FileUtil.logDepth(bytes), FileUtil.logDepth("metdata"))
+    val acq = AcqService(proxy)
+    val contractPath = Globals.appCfg.getString("contract.file.name")
+    val bytes = "011001100110111101101111"
+    val ingestedContent = RsongIngestedAsset(
+      "Broke.jpg",
+      FileUtil.logDepth(bytes),
+      FileUtil.logDepth("metdata")
+    )
 
     val work = for {
-      // _ ← installContract(contractPath)
-      // _ ← acq.store(ingestedContent)
+      _ ← installContract(contractPath)
+      _ ← acq.store(ingestedContent)
+      _ ← acq.proposeBlock
       _ ← acq.prefetch(ingestedContent.id)
       _ ← acq.proposeBlock
       n ← acq.getDataAtName(s"${ingestedContent.id}.out")
