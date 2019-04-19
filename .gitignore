@@ -8,13 +8,10 @@ project/boot/
 ##
 ## emacs & ensime
 ##
-project/.ensime
 **/**.tags
 **/**.bloop*/
+**/**.metals*/
 **/**.TAGS
-.ensime*/
-.ensime
-ensime_port
 .#*
 *.swp
 .history

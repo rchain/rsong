@@ -6,7 +6,8 @@ sealed trait Query {
   def nameOut: String
   def contract: String
 }
-case class SongQuery(nameIn: String, songId: String) extends Query {
+case class SongQuery(nameIn: String, songId: String)
+    extends Query {
   def nameOut = s"${nameIn}.out"
   def contract: String =
     s"""
