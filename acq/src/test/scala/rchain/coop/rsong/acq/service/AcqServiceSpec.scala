@@ -15,12 +15,12 @@ import org.scalacheck.Gen
 import org.scalacheck.Gen.{alphaChar, listOfN, posNum}
 import org.scalacheck.Prop.forAll
 
-class AcqServiceSpec extends Specification
-    with ScalaCheck
-    with BeforeEach { def is = s2"""
+class AcqServiceSpec extends Specification with ScalaCheck with BeforeEach {
+  def is = s2"""
     AcqService specification are:
-     0 bulk store and prefetch $p0
+     0 bulk store and builk prefetch $p1
   """
+  // 0 store and prefetch $p0
 
   val log = Logger[AcqServiceSpec]
   val contractFile = Globals.appCfg.getString("contract.file.name")
@@ -28,6 +28,30 @@ class AcqServiceSpec extends Specification
   val grpc = GRPC(server)
   val proxy = RNodeProxy()
   val acq = AcqService(proxy)
+
+  def p1 = {
+    val contents: List[RsongIngestedAsset] = (0 to 20)
+      .map(
+        x ⇒
+          RsongIngestedAsset(
+            s"$x",
+            s"${java.util.UUID.randomUUID}",
+            s"${java.util.UUID.randomUUID.toString}"
+          )
+      )
+      .toList
+    val work = for {
+      _ ← acq.storeBulk(contents)
+      _ ← acq.proposeBlock
+      ids = contents.map(_.id)
+      b ← acq.prefetchBulk(ids)
+      _ = log.info(s"prefetch bulk results are: ${b}")
+      p ← acq.proposeBlock
+    } yield (p)
+    val computed: EEString = work.run(grpc)
+    log.info(s"bulk deploy/propose results are: ${computed}")
+    computed must beRight
+  }
 
   val contentGen =
     for {
@@ -41,9 +65,9 @@ class AcqServiceSpec extends Specification
         metadata + java.util.UUID.randomUUID.toString
       )
 
-  var v: Int=0
+  var v: Int = 0
   def before = {
-    v=0
+    v = 0
     val work = for {
       _ ← acq.installContract(contractFile)
       p ← acq.proposeBlock
@@ -51,17 +75,14 @@ class AcqServiceSpec extends Specification
     work.run(grpc)
     log.info(s"contract is deployed & proposed.")
   }
-
-  val p0: Prop = Prop.forAll(contentGen)(content ⇒
-    {
-      v=v+1
-    val contents: List[RsongIngestedAsset] ing] = for {
+  val p0: Prop = Prop.forAll(contentGen)(content ⇒ {
+    v = v + 1
+    val work: ConfigReader[EEString] = for {
       _ ← acq.store(content)
-      l = content
-    } yield(l)
-
       _ ← acq.proposeBlock
-      _ = log.info(s"***** counter v = ${v} *** --- prefetching contentid = ${content.id}")
+      _ = log.info(
+        s"*** counter v = ${v} **** prefetching contentid = ${content.id}"
+      )
       _ ← acq.prefetch(content.id)
       p ← acq.proposeBlock
     } yield p
@@ -69,5 +90,4 @@ class AcqServiceSpec extends Specification
     log.info(s"---- computed val is = ${computed}")
     computed.isRight == true
   })
-
 }
