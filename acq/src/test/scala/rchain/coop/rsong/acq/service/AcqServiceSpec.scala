@@ -1,14 +1,19 @@
 package coop.rchain.rsong.acq.service
 
+import cats.data.State
 import com.typesafe.scalalogging.Logger
 import coop.rchain.rsong.core.domain._
+import coop.rchain.rsong.acq.moc.MocSongMetadata
 import coop.rchain.rsong.core.utils.Globals
 import coop.rchain.rsong.core.repo.{GRPC, RNodeProxy}
 import coop.rchain.rsong.core.repo.RNodeProxyTypeAlias.{ConfigReader, EEString}
 import org.specs2._
 import org.specs2.specification.BeforeEach
+import org.specs2.scalacheck.Parameters
 import org.scalacheck._
 import org.scalacheck.Gen
+import org.scalacheck.Gen.{alphaChar, listOfN, posNum}
+import org.scalacheck.Prop.forAll
 
 class AcqServiceSpec extends Specification with ScalaCheck with BeforeEach {
   def is =
