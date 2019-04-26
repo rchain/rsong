@@ -1,26 +1,23 @@
 package coop.rchain.rsong.acq.service
 
-import cats.data.State
 import com.typesafe.scalalogging.Logger
 import coop.rchain.rsong.core.domain._
-import coop.rchain.rsong.acq.moc.MocSongMetadata
 import coop.rchain.rsong.core.utils.Globals
 import coop.rchain.rsong.core.repo.{GRPC, RNodeProxy}
 import coop.rchain.rsong.core.repo.RNodeProxyTypeAlias.{ConfigReader, EEString}
 import org.specs2._
 import org.specs2.specification.BeforeEach
-import org.specs2.scalacheck.Parameters
 import org.scalacheck._
 import org.scalacheck.Gen
-import org.scalacheck.Gen.{alphaChar, listOfN, posNum}
-import org.scalacheck.Prop.forAll
 
 class AcqServiceSpec extends Specification with ScalaCheck with BeforeEach {
-  def is = s2"""
+  def is =
+    s2"""
     AcqService specification are:
-     0 bulk store and builk prefetch $p1
+     1 bulk store, bulk prefetch $p0
   """
-  // 0 store and prefetch $p0
+
+  //  0 store and prefetch $p0
 
   val log = Logger[AcqServiceSpec]
   val contractFile = Globals.appCfg.getString("contract.file.name")
@@ -40,17 +37,21 @@ class AcqServiceSpec extends Specification with ScalaCheck with BeforeEach {
           )
       )
       .toList
+    val ids = contents.map(_.id)
     val work = for {
-      _ ← acq.storeBulk(contents)
-      _ ← acq.proposeBlock
-      ids = contents.map(_.id)
-      b ← acq.prefetchBulk(ids)
-      _ = log.info(s"prefetch bulk results are: ${b}")
-      p ← acq.proposeBlock
-    } yield (p)
-    val computed: EEString = work.run(grpc)
+      //      p0 ← acq.storeBulk(contents)
+      //      _ = log.info(s"store bulk results are: ${p0}")
+      //      p1 ← acq.proposeBlock
+      //      _ = log.info(s"proposeBlock from store-assets- results are: ${p1}")
+      p2 ← acq.prefetchBulk(ids)
+      _ = log.info(s"prefetch bulk results are: ${p2}")
+      p3 ← acq.proposeBlock
+    } yield (p2)
+    val computed: List[EEString] = work.run(grpc)
     log.info(s"bulk deploy/propose results are: ${computed}")
-    computed must beRight
+    log.info(s" errors: ${computed.count(x => x.isLeft)}")
+    log.info(s" corrects: ${computed.count(x => x.isRight)}")
+    computed.count(x => x.isLeft) === 0
   }
 
   val contentGen =
@@ -60,14 +61,16 @@ class AcqServiceSpec extends Specification with ScalaCheck with BeforeEach {
       metadata ← Gen.alphaStr
     } yield
       RsongIngestedAsset(
-        id + java.util.UUID.randomUUID.toString,
-        data + java.util.UUID.randomUUID.toString,
-        metadata + java.util.UUID.randomUUID.toString
+        id,
+        data,
+        metadata
       )
 
   var v: Int = 0
+
   def before = {
     v = 0
+
     val work = for {
       _ ← acq.installContract(contractFile)
       p ← acq.proposeBlock
@@ -78,14 +81,18 @@ class AcqServiceSpec extends Specification with ScalaCheck with BeforeEach {
   val p0: Prop = Prop.forAll(contentGen)(content ⇒ {
     v = v + 1
     val work: ConfigReader[EEString] = for {
-      _ ← acq.store(content)
-      _ ← acq.proposeBlock
+      s0 ← acq.store(content)
       _ = log.info(
-        s"*** counter v = ${v} **** prefetching contentid = ${content.id}"
+        s"counter v = ${v} stored content=${content} -- result=${s0}"
       )
-      _ ← acq.prefetch(content.id)
-      p ← acq.proposeBlock
-    } yield p
+      _ ← acq.proposeBlock
+      _ = log.info(s"counter v = ${v} prefetching contentid = ${content.id}")
+      s1 ← acq.prefetch(content.id)
+      _ = log.info(
+        s"counter v = ${v} prefetched contentid = ${content.id} result= ${s1}"
+      )
+      s2 ← acq.proposeBlock
+    } yield s2
     val computed = work.run(grpc)
     log.info(s"---- computed val is = ${computed}")
     computed.isRight == true

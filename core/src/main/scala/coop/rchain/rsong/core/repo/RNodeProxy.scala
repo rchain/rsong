@@ -9,13 +9,11 @@ import coop.rchain.rsong.core.repo.GRPC.GRPC
 import coop.rchain.casper.protocol._
 import coop.rchain.casper.SignDeployment
 import coop.rchain.crypto.signatures.Ed25519
-import coop.rchain.crypto.{PrivateKey, PublicKey}
+import coop.rchain.crypto.PrivateKey
 import RNodeProxyTypeAlias._
 import cats.data._
 import cats.implicits._
-import coop.rchain.crypto.codec.Base16
-import coop.rchain.rsong.core.utils.{Base16 ⇒ B16}
-import coop.rchain.rsong.core.utils.Globals
+import coop.rchain.rsong.core.utils.{Base16 => B16}
 import coop.rchain.rsong.core.utils.FileUtil
 import coop.rchain.either.{Either => RCEither}
 
@@ -28,28 +26,9 @@ object RNodeProxyTypeAlias {
 
 trait RNodeProxy {
 
-  def deploy(contract: RholangContract): GRPC ⇒ Either[Err, String]
+  def deploy(contract: String): GRPC ⇒ Either[Err, String]
 
-  def deployFile(filePath: String): GRPC ⇒ Either[Err, String] = grpc => {
-    val publicKey =
-      PublicKey(
-        Base16.unsafeDecode(Globals.appCfg.getString("bond.key.public"))
-      )
-    val privateKey =
-      PrivateKey(
-        Base16.unsafeDecode(Globals.appCfg.getString("bond.key.private"))
-      )
-    for {
-      c ← FileUtil.fileFromClasspath(filePath)
-      d ← deploy(
-        RholangContract(
-          code = c,
-          publicKey = publicKey,
-          privateKey = privateKey
-        )
-      )(grpc)
-    } yield (d)
-  }
+  def deployFile(filePath: String): GRPC ⇒ Either[Err, String]
 
   def proposeBlock: GRPC ⇒ Either[Err, String]
 
@@ -66,6 +45,7 @@ trait RNodeProxy {
 
   def doBinDataAtName(name: String, depth: Int): ConfigReader[EEBin] =
     Reader(cfg ⇒ binDataAtName(name, depth)(cfg))
+
   def doBinDataAtName(name: String): ConfigReader[EEBin] =
     doBinDataAtName(name, Int.MaxValue)
 
@@ -75,12 +55,10 @@ trait RNodeProxy {
   def doDataAtName(name: String): ConfigReader[EEString] =
     doDataAtName(name, Int.MaxValue)
 
-  def doDeploy(contract: RholangContract): ConfigReader[EEString] =
+  def doDeploy(contract: String) =
     Reader(cfg ⇒ deploy(contract)(cfg))
 
-  def doDeploys(
-      contracts: List[RholangContract]
-  ): ConfigReader[List[EEString]] =
+  def doDeploys(contracts: List[String]): ConfigReader[List[EEString]] =
     contracts.traverse(doDeploy)
 
   def doDeployFile(filePath: String): ConfigReader[EEString] =
@@ -99,52 +77,66 @@ object RNodeProxy {
   import coop.rchain.rsong.core.repo.RChainToRsongHelper._
 
   lazy val log = Logger[RNodeProxy.type]
+  private final val (privateKey, _) =
+    Ed25519.newKeyPair
 
   def sign(deploy: DeployData, sec: PrivateKey): DeployData =
     SignDeployment.sign(sec, deploy, Ed25519)
 
   def apply(): RNodeProxy = new RNodeProxy {
 
-    def deploy(contract: RholangContract): GRPC ⇒ Either[Err, String] = grpc ⇒ {
+    def deploy(contract: String): GRPC ⇒ Either[Err, String] = grpc ⇒ {
       log.info(s"deploying contract: ${contract}")
       val data =
         DeployData()
-          .withTerm(contract.code)
+          .withTerm(contract)
           .withTimestamp(System.currentTimeMillis())
           .withPhloPrice(0L)
           .withPhloLimit(Long.MaxValue)
           .withDeployer(
-            ByteString.copyFrom(Ed25519.toPublic(contract.privateKey).bytes)
+            ByteString.copyFrom(Ed25519.toPublic(privateKey).bytes)
           )
-      val s = sign(data, contract.privateKey)
+      val s = sign(data, privateKey)
       grpc
         .doDeploy(s)
         .asEither(OpCode.grpcDeploy)
     }
+
+    def deployFile(filePath: String): GRPC ⇒ Either[Err, String] =
+      grpc =>
+        for {
+          c ← FileUtil.fileFromClasspath(filePath)
+          d ← deploy(c)(grpc)
+        } yield (d)
 
     def proposeBlock: GRPC ⇒ Either[Err, String] =
       grpc ⇒ grpc.createBlock(Empty()).asEither(OpCode.grpcDeploy)
 
     def dataAtName(name: String, depth: Int): GRPC ⇒ Either[Err, String] =
       grpc ⇒ {
+        val maxTry = 0 // TODO try only once for now
         val par = name.asPar
         val dataAtNameQuery = DataAtNameQuery(depth, Some(par))
 
-        def helper(cnt: Int):Either[Err, String]  = {
+        def helper(cnt: Int): Either[Err, String] = {
           val g: RCEither = grpc.listenForDataAtName(dataAtNameQuery)
           val _g: Either[Seq[String], ListeningNameDataResponse] =
             toEither[ListeningNameDataResponse](g)
-          _g.asEitherString  match {
-            case Left(e) if cnt <20 ⇒
-              log.warn(s"dataAtName try: $cnt returned ${e}. attempting again")
-              helper(cnt+1)
-            case Left(e)  ⇒ 
-              log.warn(s"dataAtName try: $cnt returned ${e}. Exhosted all attempts. giving up!")
+          _g.asEitherString match {
+            case Left(e) if cnt < maxTry ⇒
+              log.warn(
+                s"dataAtName. query= ${dataAtNameQuery}. Error: ${e} attempting again"
+              )
+              helper(cnt + 1)
+            case Left(e) ⇒
+              log.warn(s"dataAtName. query= ${dataAtNameQuery}. Error: ${e}")
               Left(e)
-            case Right(r) ⇒ Right(r) 
+            case Right(r) ⇒
+              log.info(s"dataAtName. query= ${dataAtNameQuery}. result: ${r}")
+              Right(r)
           }
         }
-        helper(0)
+        helper(maxTry + 1) // do while once
       }
   }
 }
