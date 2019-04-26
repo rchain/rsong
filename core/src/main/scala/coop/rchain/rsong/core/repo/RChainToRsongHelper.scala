@@ -27,9 +27,10 @@ object RChainToRsongHelper {
           case coop.rchain.either.Either(content) if content.isEmpty ⇒
             Left(Err(opcode, "No value was returned!"))
           case coop.rchain.either.Either(content) if content.isSuccess ⇒
-            val res =
-              (content.success.head.getResponse.value.toStringUtf8)
-            if (res.isBlank)
+            val res: String = content.success.headOption.headOption
+              .map(x => x.getResponse.value.toStringUtf8)
+              .getOrElse("")
+            if (res.isEmpty)
               Left(
                 Err(opcode, "empty string was returned!")
               )
@@ -75,7 +76,7 @@ object RChainToRsongHelper {
               )
             case Some(r) ⇒
               PrettyPrinter().buildString(r) match {
-                case s: String if s.isBlank =>
+                case s: String if s.isEmpty =>
                   Left(
                     Err(
                       OpCode.listenAtName,
