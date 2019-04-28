@@ -9,6 +9,7 @@ rnode run -s \
       --required-sigs 0 \
       --thread-pool-size 5  \
       --validator-private-key \
-      6bd8981cf922a547ca3c2d218f747d8048b7999a2f744f14e124a7082991b7e3
+      ee7a42c736d4da8395e0727c648e05519c7f4cf4d917f56f9249612353426b8f
+ 
 
 
