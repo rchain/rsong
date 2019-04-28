@@ -15,11 +15,11 @@ import org.scalacheck.Gen
 import org.scalacheck.Gen.{alphaChar, listOfN, posNum}
 import org.scalacheck.Prop.forAll
 
-class AcqServiceSpec extends Specification with ScalaCheck with BeforeEach {
+class AcqServiceSpec extends Specification {
   def is =
     s2"""
-    AcqService specification are:
-      content store, and prefetch spec $p0
+    AcqService is the content Acquisition compoenent of Rsong. This service Specs are:
+       Deploy Contract, Bulk deploy/propose followed by Prefetch operations of contents
   """
 
   val log = Logger[AcqServiceSpec]
@@ -29,47 +29,28 @@ class AcqServiceSpec extends Specification with ScalaCheck with BeforeEach {
   val proxy = RNodeProxy()
   val acq = AcqService(proxy)
 
-  val contentGen =
-    for {
-      id ← Gen.identifier
-      data ← Gen.alphaStr
-      metadata ← Gen.alphaStr
-    } yield
-      RsongIngestedAsset(
-        id,
-        data,
-        metadata
-      )
-
-  var v: Int = 0
-
-  def before = {
-    v = 0
-
-    val work = for {
+  val contentList = (100 to 135).map(
+    x => RsongIngestedAsset(
+      id=s"$x",
+      data = s"content data for id=$x",
+      metadata = s"content metadata for id=$x")
+  ).toList
+  val p1 = {
+    import com.typesafe.config.ConfigResolver
+    val work: ConfigReader[Int] = for {
       _ ← acq.installContract(contractFile)
-      p ← acq.proposeBlock
-    } yield (p)
-    work.run(grpc)
-    log.info(s"contract is deployed & proposed.")
-  }
-  val p0: Prop = Prop.forAll(contentGen)(content ⇒ {
-    v = v + 1 //TODO this is bad. FIXME
-    val work: ConfigReader[EEString] = for {
-      s0 ← acq.store(content)
-      _ = log.info(
-        s"counter v = ${v} stored content=${content} -- result=${s0}"
-      )
       _ ← acq.proposeBlock
-      _ = log.info(s"counter v = ${v} prefetching contentid = ${content.id}")
-      s1 ← acq.prefetch(content.id)
-      _ = log.info(
-        s"counter v = ${v} pre-fetched by content-id = ${content.id} result= ${s1}"
-      )
-      s2 ← acq.proposeBlock
-    } yield s2
+      s0 ← acq.storeBulk(contentList)
+      _=log.info(s"storeBullk result = $s0")
+      s1 ← acq.proposeBlock
+      _=log.info(s"propose results of $s0 = $s1")
+      s2 ← acq.prefetchBulk(contentList.map(x => s"${x.id}"))
+      r0= s2.count( x ⇒ x.isLeft )
+      _=log.info(s"prrefetch results of = $s2")
+      _=log.warn(s"prefetech errors = ${r0}")
+      s3 ← acq.proposeBlock
+    } yield(r0)
     val computed = work.run(grpc)
-    log.info(s"---- computed val is = ${computed}")
-    computed.isRight == true
-  })
+    computed === 0
+  }
 }
