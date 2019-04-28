@@ -1,14 +1,16 @@
 import Dependencies._
 import TodoListPlugin._
 
-lazy val compilerSettings = CompilerSettings.options ++ Seq(crossScalaVersions := Seq("2.11.12", scalaVersion.value))
+lazy val compilerSettings = CompilerSettings.options ++ Seq(
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value)
+)
 
 lazy val acq = (project in file("acq"))
   .configs(IntegrationTest extend Test)
   .settings(Settings.proxy: _*)
   .settings(Defaults.itSettings)
   .settings(Settings.acq: _*)
-  .dependsOn(core % "compile->compile;test->test")
+  .dependsOn(core % "compile->compile;test->test;it->it")
   .settings(libraryDependencies ++= Dep.acq)
 
 lazy val proxy = (project in file("proxy"))

@@ -19,7 +19,7 @@ class AcqServiceSpec extends Specification {
   def is =
     s2"""
     AcqService is the content Acquisition compoenent of Rsong. This service Specs are:
-       Deploy Contract, Bulk deploy/propose followed by Prefetch operations of contents
+       Deploy Contract, Bulk deploy/propose followed by Prefetch operations for content count of 30 t$p1
   """
 
   val log = Logger[AcqServiceSpec]
@@ -28,29 +28,30 @@ class AcqServiceSpec extends Specification {
   val grpc = GRPC(server)
   val proxy = RNodeProxy()
   val acq = AcqService(proxy)
+  val maxTests= 30
 
-  val contentList = (100 to 135).map(
+  val contentList = (1 to maxTests).map(
     x => RsongIngestedAsset(
       id=s"$x",
       data = s"content data for id=$x",
       metadata = s"content metadata for id=$x")
   ).toList
+  val contenetIds = contentList.map(x ⇒ s"${x.id}")
+
   val p1 = {
     import com.typesafe.config.ConfigResolver
-    val work: ConfigReader[Int] = for {
+    val work: ConfigReader[(Int, Int)] = for {
       _ ← acq.installContract(contractFile)
       _ ← acq.proposeBlock
       s0 ← acq.storeBulk(contentList)
-      _=log.info(s"storeBullk result = $s0")
+      _=log.info(s"storeBullk total number of tests: $maxTests. Successfull stores: = ${s0.count(_.isRight)}")
       s1 ← acq.proposeBlock
-      _=log.info(s"propose results of $s0 = $s1")
       s2 ← acq.prefetchBulk(contentList.map(x => s"${x.id}"))
-      r0= s2.count( x ⇒ x.isLeft )
-      _=log.info(s"prrefetch results of = $s2")
-      _=log.warn(s"prefetech errors = ${r0}")
+      (l,r)= (s2.count(_.isLeft), s2.count(_.isRight))
       s3 ← acq.proposeBlock
-    } yield(r0)
+    } yield((l,r))
     val computed = work.run(grpc)
-    computed === 0
+    log.info(s"prrefetch results: failures: ${computed._1} success: ${computed._2} bulk-size: ${contenetIds.size}")
+    computed._1 === 0
   }
 }

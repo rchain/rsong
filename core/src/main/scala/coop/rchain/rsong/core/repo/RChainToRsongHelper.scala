@@ -45,11 +45,13 @@ object RChainToRsongHelper {
       response match {
         case Left(strs) ⇒
           Left(Err(OpCode.listenAtName, strs.toString))
-        case Right(ListeningNameDataResponse(_, length)) if length < 1 ⇒
+        case Right(ListeningNameDataResponse(blockResults, length))
+            if length < 1 ⇒
           Left(
             Err(
               OpCode.listenAtName,
-              s"dataAtName length <1.  length = $length"
+              s"dataAtName returned name with length of $length. Detail: ${blockResults
+                .map(_.postBlockData)}"
             )
           )
         case Right(
@@ -93,5 +95,4 @@ object RChainToRsongHelper {
     def asPar: Par =
       Par().copy(exprs = Seq(Expr(GString(rTerm))))
   }
-
 }
