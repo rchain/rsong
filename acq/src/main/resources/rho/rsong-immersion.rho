@@ -1,30 +1,6 @@
-// Immersion contract
-// store song & metadata, including artists to remunerate; return songid
-// retrieve song given songid
-// retrieve set of songs, metadata, & corresponding songids
-// get new userid with 50 plays
-// play(songid, userid): if (remaining user plays > 0) { decrement user plays, increment song plays, return allowed } else { return denied }
-// getPlaysRemaining(userid)
-
-
-new metaDataMapStore, songMapStore, userMapStore, remunerate, testLog(`rho:io:stderr`), stdout(`rho:io:stdout`) in {
-  // Maps songId to [metadata, songDataId]
+new metaDataMapStore, songMapStore, stdout(`rho:io:stdout`) in {
   metaDataMapStore!({}) |
-  // Maps songDataId to songData
   songMapStore!({}) |
-  // Maps userId to remaining play count
-  userMapStore!({}) |
-  
-  // songDataIn: arbitrary, usually bytearray
-  // songMetaDataIn: map with
-  //  "Title Name" - title of song
-  //  "Artist Name" - artist of song
-  //  "songWriters" key with a list of [
-  //    "pubKey" - ed25519 public key (ByteArray of length 32)
-  //    "share" - int between 0 and 100: percent of revenue share
-  //    "name" - display name for this songwriter
-  //  ]
-  // songIdOut: name on which new songId (ByteArray) gets sent
   contract @["Immersion", "store"](@songDataIn, @songMetadataIn, songIdOut) = {
     new songId, songDataId in {
       stdout!("In immersion store") |
@@ -44,72 +20,11 @@ new metaDataMapStore, songMapStore, userMapStore, remunerate, testLog(`rho:io:st
       }
     }
   } |
-
-
-  // songIdIn: bytearray
-  // songDataOut: name on which songData gets sent
   contract @["Immersion", "retrieveSong"](@songIdIn, songDataOut) = {
     for (@metaDataMap <- metaDataMapStore; @songMap <- songMapStore) {
       metaDataMapStore!(metaDataMap) |
       songMapStore!(songMap) |
       songDataOut!(songMap.get(metaDataMap.get(songIdIn).nth(1)))
-    }
-  } |
-  
-  // metaDataMapOut: name on which to send map from song ids to metadata
-  contract @["Immersion", "retrieveMetaData"](metaDataMapOut) = {
-    for (@metaDataMap <- metaDataMapStore) {
-      metaDataMapStore!(metaDataMap) |
-      metaDataMapOut!(metaDataMap)
-    }
-  } |
-  
-  // userIdOut: name on which to send new user id (ByteArray)
-  contract @["Immersion", "newUserId"](userIdOut) = {
-    new userId in {
-      for (@userMap <- userMapStore) {
-        userMapStore!(userMap.set(*userId.toByteArray(), 50)) |
-        userIdOut!(*userId.toByteArray())
-      }
-    }
-  } |
-  
-  // songIdIn: bytearray
-  // userIdIn: bytearray
-  // permittedOut: boolean
-  contract @["Immersion", "play"](@songIdIn, @userIdIn, permittedOut) = {
-    for (@metaDataMap <- metaDataMapStore; @userMap <- userMapStore) {
-      metaDataMapStore!(metaDataMap) |  // peek
-
-      new playsRemainingOut in {
-        playsRemainingOut!(userMap.get(userIdIn)) |
-        for (@playsRemaining <- playsRemainingOut) {
-          new mdOut in {
-            mdOut!(metaDataMap.get(songIdIn)) |
-            for (@md <- mdOut) {
-              if (playsRemaining == Nil or playsRemaining == 0 or md == Nil) {
-                userMapStore!(userMap) |
-                permittedOut!(false)
-              } else {
-                userMapStore!(userMap.set(userIdIn, playsRemaining - 1)) |
-                // ISSUE: we assume this succeeds; i.e. that metadata
-                // supplied to "store" is correct.
-                remunerate!(md.nth(0), Nil) |
-                permittedOut!(true)
-              }
-            }
-          }
-        }
-      }
-    }
-  } |
-  
-  // userIdIn: bytearray
-  // countOut: name on which the reamining play count is sent
-  contract @["Immersion", "playCount"](@userIdIn, countOut) = {
-    for (@userMap <- userMapStore) {
-      userMapStore!(userMap) |
-      countOut!(userMap.get(userIdIn))
     }
   }
 }
