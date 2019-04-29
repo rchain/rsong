@@ -7,7 +7,7 @@
 // getPlaysRemaining(userid)
 
 
-new metaDataMapStore, songMapStore, userMapStore, remunerate, testLog(`rho:io:stderr`) in {
+new metaDataMapStore, songMapStore, userMapStore, remunerate, testLog(`rho:io:stderr`), stdout(`rho:io:stdout`) in {
   // Maps songId to [metadata, songDataId]
   metaDataMapStore!({}) |
   // Maps songDataId to songData
@@ -27,14 +27,25 @@ new metaDataMapStore, songMapStore, userMapStore, remunerate, testLog(`rho:io:st
   // songIdOut: name on which new songId (ByteArray) gets sent
   contract @["Immersion", "store"](@songDataIn, @songMetadataIn, songIdOut) = {
     new songId, songDataId in {
+      stdout!("In immersion store") |
+      for (@metaDataMap <- metaDataMapStore) {
+         stdout!("metaDataMap") |
+         metaDataMapStore!(metaDataMap)
+      } |
+      for (@songMap <- songMapStore) {
+         stdout!("songMap") |
+         songMapStore!(songMap)
+      } |
       for (@metaDataMap <- metaDataMapStore; @songMap <- songMapStore) {
+        stdout!("In immersion store: after metaDataMap, songMap") |
         metaDataMapStore!(metaDataMap.set(*songId.toByteArray(), [songMetadataIn, *songDataId.toByteArray()])) |
         songMapStore!(songMap.set(*songDataId.toByteArray(), songDataIn)) |
         songIdOut!(*songId.toByteArray())
       }
     }
   } |
-  
+
+
   // songIdIn: bytearray
   // songDataOut: name on which songData gets sent
   contract @["Immersion", "retrieveSong"](@songIdIn, songDataOut) = {
