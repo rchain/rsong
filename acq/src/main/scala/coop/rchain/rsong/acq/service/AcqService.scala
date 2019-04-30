@@ -2,18 +2,17 @@ package coop.rchain.rsong.acq.service
 
 import coop.rchain.rsong.core.domain.{Err, RholangContract, RsongIngestedAsset}
 import AcqService._
-import cats.data.EitherT
+import cats.Monad
+import cats.data.{EitherT, Reader}
 import coop.rchain.rsong.core.utils.{Base16 => B16}
 import coop.rchain.rsong.core.repo.RNodeProxy
 import cats.implicits._
 import com.typesafe.scalalogging.Logger
 import coop.rchain.crypto.signatures.Ed25519
 import coop.rchain.rsong.acq.domain.SongQuery
-import coop.rchain.rsong.core.repo.RNodeProxyTypeAlias.{
-  ConfigReader,
-  EEBin,
-  EEString
-}
+import coop.rchain.rsong.core.repo.RNodeProxyTypeAlias.{ConfigReader, EEBin, EEString}
+
+import scala.tools.jline_embedded.console.ConsoleReader
 
 trait AcqService {
 
@@ -96,9 +95,13 @@ class AcqServiceImpl(proxy: RNodeProxy) extends AcqService {
   def prefetch(assetId: String): ConfigReader[EEString] = {
     val nameOut: EitherT[ConfigReader, Err, String] =
       for {
+        _ <- EitherT.liftF[ConfigReader, Err, Unit](().pure[ConfigReader])
+        _ = log.info(
+          s"LISTEND FOR DATA ANT NAME for assetId = ${assetId}"
+        )
         nIn ← EitherT(proxy.doDataAtName(s"""$assetId"""))
         _ = log.info(
-          s"for assetId = ${assetId} proxyDataAtName returned: ${nIn}"
+          s"LOL for assetId = ${assetId} proxyDataAtName returned: ${nIn}"
         )
         q <- EitherT(proxy.lift(Right((SongQuery(assetId, nIn)).contract)))
         _ = log.info(s"for assetId = ${assetId} rholang-contract= ${q}")

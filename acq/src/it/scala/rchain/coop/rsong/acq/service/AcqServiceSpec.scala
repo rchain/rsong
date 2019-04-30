@@ -28,7 +28,7 @@ class AcqServiceSpec extends Specification {
   val grpc = GRPC(server)
   val proxy = RNodeProxy()
   val acq = AcqService(proxy)
-  val maxTests= 30
+  val maxTests = 5 FFFS S SA AS AS DFASD
 
   val contentList = (1 to maxTests).map(
     x => RsongIngestedAsset(
