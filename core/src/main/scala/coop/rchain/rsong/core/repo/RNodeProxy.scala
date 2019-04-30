@@ -92,7 +92,7 @@ object RNodeProxy {
           .withTerm(contract)
           .withTimestamp(System.currentTimeMillis())
           .withPhloPrice(0L)
-          .withPhloLimit(Long.MaxValue)
+          .withPhloLimit(Integer.MAX_VALUE)
           .withDeployer(
             ByteString.copyFrom(Ed25519.toPublic(privateKey).bytes)
           )
