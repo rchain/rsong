@@ -38,6 +38,7 @@ object Dependencies {
     val kamon = "io.kamon" %% "kamon-prometheus" % V.kamon
     val bouncyCastle = "org.bouncycastle" % "bcprov-jdk15on" % "1.60"
     val kalium = "com.github.rchain" % "kalium" % "0.8.1"
+    val secp256k1Java = "com.github.rchain" % "secp256k1-java" % "0.1"
   }
 
   object Dep {
@@ -84,6 +85,7 @@ object Dependencies {
       library.monix,
       library.catsEffect,
       library.bouncyCastle,
+      library.secp256k1Java,
       library.kalium,
       library.spec2
     )

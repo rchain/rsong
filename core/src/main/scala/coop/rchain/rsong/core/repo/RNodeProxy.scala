@@ -8,7 +8,7 @@ import coop.rchain.models.either.EitherHelper._
 import coop.rchain.rsong.core.repo.GRPC.GRPC
 import coop.rchain.casper.protocol._
 import coop.rchain.casper.SignDeployment
-import coop.rchain.crypto.signatures.Ed25519
+import coop.rchain.crypto.signatures.Secp256k1
 import coop.rchain.crypto.PrivateKey
 import RNodeProxyTypeAlias._
 import cats.data._
@@ -78,10 +78,10 @@ object RNodeProxy {
 
   lazy val log = Logger[RNodeProxy.type]
   private final val (privateKey, _) =
-    Ed25519.newKeyPair
+    Secp256k1.newKeyPair
 
   def sign(deploy: DeployData, sec: PrivateKey): DeployData =
-    SignDeployment.sign(sec, deploy, Ed25519)
+    SignDeployment.sign(sec, deploy, Secp256k1)
 
   def apply(): RNodeProxy = new RNodeProxy {
 
@@ -94,7 +94,7 @@ object RNodeProxy {
           .withPhloPrice(0L)
           .withPhloLimit(Integer.MAX_VALUE)
           .withDeployer(
-            ByteString.copyFrom(Ed25519.toPublic(privateKey).bytes)
+            ByteString.copyFrom(Secp256k1.toPublic(privateKey).bytes)
           )
       val s = sign(data, privateKey)
       grpc

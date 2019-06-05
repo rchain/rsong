@@ -28,7 +28,7 @@ class AcqServiceSpec extends Specification {
   val grpc = GRPC(server)
   val proxy = RNodeProxy()
   val acq = AcqService(proxy)
-  val maxTests= 30
+  val maxTests= 3
 
   val contentList = (1 to maxTests).map(
     x => RsongIngestedAsset(
@@ -42,10 +42,10 @@ class AcqServiceSpec extends Specification {
     import com.typesafe.config.ConfigResolver
     val work: ConfigReader[(Int, Int)] = for {
       _ ← acq.installContract(contractFile)
-      _ ← acq.proposeBlock
       s0 ← acq.storeBulk(contentList)
       _=log.info(s"storeBullk total number of tests: $maxTests. Successfull stores: = ${s0.count(_.isRight)}")
       s1 ← acq.proposeBlock
+      _=log.info(s"propose block-store returned: ${s1}")
       s2 ← acq.prefetchBulk(contentList.map(x => s"${x.id}"))
       (l,r)= (s2.count(_.isLeft), s2.count(_.isRight))
       s3 ← acq.proposeBlock
