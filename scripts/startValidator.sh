@@ -10,8 +10,3 @@ rnode run -s \
       --thread-pool-size 5  \
       --validator-private-key \
       $VALIDATOR_KEY
-
-
- 
-
-
