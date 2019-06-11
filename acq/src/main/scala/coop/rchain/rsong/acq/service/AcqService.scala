@@ -7,55 +7,50 @@ import coop.rchain.rsong.core.utils.{Base16 => B16}
 import coop.rchain.rsong.core.repo.RNodeProxy
 import cats.implicits._
 import com.typesafe.scalalogging.Logger
-import coop.rchain.crypto.signatures.Ed25519
 import coop.rchain.rsong.acq.domain.SongQuery
-import coop.rchain.rsong.core.repo.RNodeProxyTypeAlias.{
-  ConfigReader,
-  EEBin,
-  EEString
-}
+import coop.rchain.rsong.core.repo.RNodeProxyTypeAlias.{DeployReader, EEBin, EEString, ProposeReader}
 
 trait AcqService {
 
-  def installContract(path: String): ConfigReader[EEString]
+  def installContract(path: String): DeployReader[EEString]
 
   def store(
       asset: RsongIngestedAsset
-  ): ConfigReader[EEString]
+  ): DeployReader[EEString]
 
   def storeBulk(
       assets: List[RsongIngestedAsset]
-  ): ConfigReader[List[EEString]] =
+  ): DeployReader[List[EEString]] =
     assets.traverse(store)
 
-  def prefetch(name: String): ConfigReader[EEString]
+  def prefetch(name: String): DeployReader[EEString]
 
   def prefetchBulk(
       names: List[String]
-  ): ConfigReader[List[EEString]] =
+  ): DeployReader[List[EEString]] =
     names.traverse(prefetch)
 
   def getDataAtName(
       rholangName: String,
       maxDepth: Int
-  ): ConfigReader[EEString]
+  ): DeployReader[EEString]
 
   def getDataAtName(
       rholangName: String
-  ): ConfigReader[EEString] =
+  ): DeployReader[EEString] =
     getDataAtName(rholangName, Int.MaxValue)
 
   def getBinDataAtName(
       rholangName: String,
       maxDepth: Int
-  ): ConfigReader[EEBin]
+  ): DeployReader[EEBin]
 
   def getBinDataAtName(
       rholangName: String
-  ): ConfigReader[EEBin] =
+  ): DeployReader[EEBin] =
     getBinDataAtName(rholangName, maxDepth = Int.MaxValue)
 
-  def proposeBlock: ConfigReader[EEString]
+  def proposeBlock: ProposeReader[EEString]
 }
 
 object AcqService {
@@ -84,17 +79,15 @@ class AcqServiceImpl(proxy: RNodeProxy) extends AcqService {
   val log = Logger[AcqService]
   def installContract(
       contractPath: String
-  ): ConfigReader[EEString] =
-    for {
-      _ ← proxy.doDeployFile(contractPath)
-      p ← proposeBlock
-    } yield p
+  ): DeployReader[EEString] =
+      proxy.doDeployFile(contractPath)
 
-  def store(asset: RsongIngestedAsset): ConfigReader[EEString] =
+  def store(asset: RsongIngestedAsset): DeployReader[EEString] =
     proxy.doDeploy(asset.asRholangCode)
 
-  def prefetch(assetId: String): ConfigReader[EEString] = {
-    val nameOut: EitherT[ConfigReader, Err, String] =
+  def prefetch(assetId: String): DeployReader[EEString] = {
+    log.info(s"in preftech, prefetching assetid=${assetId}")
+    val nameOut: EitherT[DeployReader, Err, String] =
       for {
         nIn ← EitherT(proxy.doDataAtName(s"""$assetId"""))
         _ = log.info(
@@ -110,16 +103,17 @@ class AcqServiceImpl(proxy: RNodeProxy) extends AcqService {
   def getBinDataAtName(
       rholangName: String,
       maxDepth: Int
-  ): ConfigReader[EEBin] =
+  ): DeployReader[EEBin] =
     proxy.doBinDataAtName(rholangName)
 
   def getDataAtName(
       rholangName: String,
       maxDepth: Int
-  ): ConfigReader[EEString] =
+  ): DeployReader[EEString] =
     proxy.doDataAtName(rholangName)
 
-  def proposeBlock: ConfigReader[EEString] =
+  def proposeBlock: ProposeReader[EEString] = {
     proxy.doProposeBlock
+  }
 
 }

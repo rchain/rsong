@@ -17,6 +17,8 @@ object Dependencies {
   }
 
   object library {
+    val bouncyProvCastle = "org.bouncycastle" % "bcprov-jdk15on" % "1.61"
+    val bouncyPkixCastle = "org.bouncycastle" % "bcpkix-jdk15on" % "1.61"
     val magnolia = "com.propensive" %% "magnolia" % "0.10.0"
     val spec2 = "org.specs2" %% "specs2-scalacheck" % V.spec2  % "it, test"
     val catsEffect = "org.typelevel" %% "cats-effect" % V.catsEffect
@@ -76,6 +78,8 @@ object Dependencies {
     )
 
     val core: Seq[ModuleID] = Seq(
+      library.bouncyCastle,
+      library.bouncyPkixCastle,
       library.magnolia,
       library.config,
       library.scalapb_grpc,
