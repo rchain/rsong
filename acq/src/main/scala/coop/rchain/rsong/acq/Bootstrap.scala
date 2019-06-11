@@ -7,13 +7,12 @@ import coop.rchain.rsong.acq.moc.MocSongMetadata
 import coop.rchain.rsong.acq.service.AcqService
 import coop.rchain.rsong.acq.utils.{Globals => G}
 import coop.rchain.rsong.core.domain.{Err, RsongIngestedAsset, Server}
-import coop.rchain.rsong.core.repo.RNodeProxyTypeAlias.{ConfigReader, EEString}
 import coop.rchain.rsong.core.repo.{GRPC, RNodeProxy}
 
 object Bootstrap extends IOApp {
   lazy val log = Logger[Bootstrap.type]
-  val rnode = Server(G.rnodeHost, G.rnodePort)
-  val grpc = GRPC(rnode)
+  val grpcPropose = GRPC.Propose( Server(G.rnodeHost, G.rnodePort) )
+  val grpcDeploy = GRPC.Deploy( Server(G.rnodeHost, G.rnodePort) )
   val proxy = RNodeProxy()
   val acq = AcqService(proxy)
 
@@ -24,7 +23,7 @@ object Bootstrap extends IOApp {
           workAll(
             G.contractPath,
             MocSongMetadata.contents(G.rsongPath)
-          ).run(grpc)
+          )
         ).as(ExitCode.Success)
           .handleError(e => {
             log.error(
@@ -36,7 +35,6 @@ object Bootstrap extends IOApp {
       case Some(a) if a.equals("Deploy") =>
         IO(
           workContent(MocSongMetadata.contents(G.rsongPath))
-            .run(grpc)
         ).as(ExitCode.Success)
           .handleError(e => {
             log.error(
@@ -46,8 +44,9 @@ object Bootstrap extends IOApp {
           })
 
       case Some(a) if a.equals("Install") =>
-        IO(installContract(G.contractPath).run(grpc))
-          .as(ExitCode.Error)
+        IO(
+          installContract(G.contractPath)
+        ).as(ExitCode.Success)
           .handleError(e => {
             log.error(
               s"Contract Install failed with error: ${e.getMessage}"
@@ -55,36 +54,34 @@ object Bootstrap extends IOApp {
             ExitCode.Error
           })
     }
+
   def installContract(
       contractFile: String
-  ): ConfigReader[EEString] =
-    for {
-      _ ← proxy.doDeployFile(contractFile)
-      p ← proxy.doProposeBlock
-    } yield (p)
+  ) = {
+    val deploys = acq.installContract(contractFile).run(grpcDeploy)
+    log.debug(s"deploy results from deploy contract: ${deploys}")
+    val propose = acq.proposeBlock.run(grpcPropose)
+    log.debug(s"propose results from installContract: ${propose}")
+  }
 
   def workContent(
       contents: List[RsongIngestedAsset]
-  ): ConfigReader[EEString] =
-    (for {
-      _ <- acq.storeBulk(contents)
-      ids = contents.map(x => x.id)
-      r ← acq.proposeBlock
-      _ ← acq.prefetchBulk(ids)
-      r ← acq.proposeBlock
-    } yield r)
+  ) : Unit= {
+    val deploys =  acq.storeBulk(contents).run(grpcDeploy)
+    log.debug(s"deploy results storeBulk: ${deploys}")
+    val proposeContent = acq.proposeBlock.run(grpcPropose)
+    log.debug(s"propose results from StoreBulk: ${proposeContent}")
+    val putAtNames = acq.prefetchBulk(contents.map(x => x.id))
+    log.debug(s"deploys result from prefetch: ${putAtNames}")
+    val propose = acq.proposeBlock.run(grpcPropose)
+    log.debug(s"propose results from prefetch: ${propose}")
+  }
 
   def workAll(
-      contract: String,
+      contractFile: String,
       contents: List[RsongIngestedAsset]
-  ): ConfigReader[EEString] = {
-    val ids = contents.map(x => x.id)
-    (for {
-      c <- installContract(contract)
-      _ <- acq.storeBulk(contents)
-      r ← acq.proposeBlock
-      _ ← acq.prefetchBulk(ids)
-      r ← acq.proposeBlock
-    } yield r)
+  ):Unit = {
+    installContract(contractFile)
+    workContent(contents)
   }
 }

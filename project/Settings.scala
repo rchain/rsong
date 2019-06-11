@@ -35,13 +35,14 @@ object Settings {
 
   lazy val itSettings = Defaults.itSettings ++ Seq(
     IntegrationTest / fork := true,
+    parallelExecution in IntegrationTest := false,
     IntegrationTest / parallelExecution := false,
     IntegrationTest / testForkedParallel := false,
    scalaSource in IntegrationTest := baseDirectory.value / "src/it/scala",
    logBuffered in IntegrationTest := false,
     fork in IntegrationTest := true
   )
-  
+
   lazy val compilerSettings = CompilerSettings.options ++ Seq(
     crossScalaVersions := Seq("2.11.12", scalaVersion.value)
 )
